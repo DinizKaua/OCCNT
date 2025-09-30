@@ -7,7 +7,7 @@
   "diseases": [
     {
       "name": "Hipertensão Arterial",
-      "id": "hipertensao"
+      "id": "hipertensao-arterial"
     },
     {
         "name":"Doença Arterial Coronariana",
@@ -15,7 +15,7 @@
     },
     {
       "name": "Arritimia",
-      "id": "arritimia"
+      "id": "arritimias"
     }
   ]
 }

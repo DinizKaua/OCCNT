@@ -125,3 +125,24 @@
         padding: 0.75rem;
     }
 }
+
+.chart {
+    padding: 0.5rem 0;
+}
+
+.chart-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.chart-content canvas {
+    display: block;
+    width: 100% !important;
+    max-height: 400px;
+    margin-bottom: 3rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
