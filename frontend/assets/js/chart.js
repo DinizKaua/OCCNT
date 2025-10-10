@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (diseaseId) {
         // AJUSTE A URL DA SUA API AQUI
-        const apiUrl = `http://200.137.131.99:5000/api/v1/doencas/${diseaseId}/series`;
+        const apiUrl = `http://192.168.1.106:5000/api/v1/doencas/${diseaseId}/series`;
         loadDataFromJSON(apiUrl);
     } else {
         console.error('Nenhuma doença selecionada na URL');
