@@ -1,47 +1,67 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Visualizações gráficas e análises preditivas de séries temporais sobre condições crônicas não transmissíveis">
-    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/assets/css/navigation.css">
-    <link rel="stylesheet" href="/assets/css/paragraph.css">
-    <title>Observatório - OCCNT</title>
+    <meta name="description" content="Explore dados detalhados sobre condições crônicas não transmissíveis no Observatório OCCNT">
+    <link rel="stylesheet" href="../../assets/css/observatory.css" />
+    <link rel="shortcut icon" href="../../assets/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../../assets/css/navigation.css">
+    <title id="pageTitle">Observatório - OCCNT</title>
 </head>
-<body>  
-    <header class="header">
-        <nav class="navigation" role="navigation" aria-label="Navegação principal">
-            <button class="nav-button active" data-section="dados" aria-current="page" aria-label="Página atual - Dados sobre condições crônicas">Dados</button>
-            <button class="nav-button" data-section="sobre" aria-label="Informações sobre o observatório">Sobre</button>
-            <button class="nav-button" data-section="repositorio" aria-label="Acessar repositório de dados">Repositório</button>
-        </nav>
-    </header>
+<body>
+  <header class="header">
+    <nav class="navigation" role="navigation" aria-label="Navegação principal">
+      <button class="nav-button active" data-section="dados" aria-current="page" aria-label="Página atual - Dados sobre condições crônicas">Dados</button>
+      <button class="nav-button" data-section="sobre" aria-label="Informações sobre o observatório">Sobre</button>
+      <button class="nav-button" data-section="repositorio" aria-label="Acessar repositório de dados">Repositório</button>
+    </nav>
+  </header>
 
-    <main class="main-content" id="main-content">
-        <section class="hero-section">
-            <div class="hero-content">
-                <h1 class="main-title">Observatório</h1>
-            </div>
-        </section>
+  <main>
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1 class="main-title" id="categoryTitle">Carregando...</h1>
+      </div>
+    </section>
 
-        <section class="about-content">
-            <div class="content-container">
-                <p class="content-paragraph">
-                    A seguir, apresenta-se a representação gráfica da série temporal contendo os valores observados e a previsão obtida a partir do modelo preditivo aplicado.
-                </p>
-            </div>
-        </section>
+    <section id="doencas" class="hidden">
+      <h2 id="titulo-doencas">Opcões</h2>
+      <div id="lista-doencas" class="cards"></div>
+    </section>
 
-        <section class="chart">
-            <div class="chart-content">
-                <canvas id="combined-chart"></canvas>
-            </div>
-        </section>
-    </main>
+    <section id="tipo-dado" class="hidden">
+      <h2 id="titulo-tipo">Tipos de dado</h2>
+      <div id="lista-tipos" class="cards"></div>
+    </section>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="/assets/js/navigation.js"></script>
-    <script src="/assets/js/chart.js"></script>
+    <section id="parametros" class="hidden">
+      <h2>Parâmetros</h2>
+      <label>
+        Estado (TABNET):
+        <input type="text" id="estado" value="21 Maranhão" />
+      </label>
+      <label>
+        Anos de previsão:
+        <input type="number" id="anos-previsao" value="3" min="1" max="10" />
+      </label>
+      <button id="btn-prever">Rodar ARIMA</button>
+    </section>
+
+    <section id="resultado" class="graficoArima-box hidden" >
+      <h2>Resultado</h2>
+      <pre hidden id="resultado-json"></pre>
+      <div class="chart-wrapper">
+        <canvas id="grafico-arima"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <footer><small>Laboratório de Inteligência Interativa</small></footer>
+  <script src="/assets/js/navigation.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../../assets/js/observatoy.js"></script>
+  <script src="../../assets/js/estados.js"></script>
+  <script src="../../assets/js/checkbox.js"></script>
 </body>
 </html>

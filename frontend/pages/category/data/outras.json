@@ -16,6 +16,10 @@
     {
       "name": "Endometriose",
       "id": "endometriose"
+    },
+    {
+      "name": "Sepse",
+      "id": "sepse"
     }
   ]
 }

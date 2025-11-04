@@ -1,0 +1,219 @@
+/* Seções de conteúdo (exceto hero-section) */
+section:not(.hero-section) {
+  padding: 2rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+section.hidden {
+  display: none;
+}
+
+/* Títulos das seções (exceto hero) */
+section:not(.hero-section) h2 {
+  color: #2c5f4f;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 3px solid #4a9d7e;
+}
+
+/* Seção de doenças e tipos de dado */
+#doencas, #tipo-dado {
+  background: #f8faf9;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Cards container */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* Card individual */
+.cards > div {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.cards > div:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(74, 157, 126, 0.3);
+  border-color: #4a9d7e;
+}
+
+.cards > div.selected {
+  background: #4a9d7e;
+  color: white;
+  border-color: #3d8469;
+  box-shadow: 0 4px 16px rgba(74, 157, 126, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Seção de parâmetros */
+#parametros {
+  background: white;
+  border: 2px solid #e0e7e4;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+#parametros h2 {
+  margin-top: 0;
+}
+
+#parametros label {
+  display: block;
+  margin-bottom: 1.5rem;
+  color: #2c5f4f;
+  font-weight: 500;
+  font-size: 1rem;
+  position: relative;
+}
+
+/* Autocomplete container */
+.autocomplete-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #4a9d7e;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: none;
+}
+
+.autocomplete-list.show {
+  display: block;
+}
+
+.autocomplete-item {
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover {
+  background: #f0f7f4;
+}
+
+.autocomplete-item.active {
+  background: #e6f2ed;
+}
+
+.no-results {
+  padding: 0.75rem;
+  color: #999;
+  text-align: center;
+}
+
+#parametros input {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  border: 2px solid #d1ddd7;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+#parametros input:focus {
+  outline: none;
+  border-color: #4a9d7e;
+  box-shadow: 0 0 0 3px rgba(74, 157, 126, 0.1);
+}
+
+#btn-prever {
+  background: #4a9d7e;
+  color: white;
+  border: none;
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+#btn-prever:hover {
+  background: #3d8469;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 157, 126, 0.3);
+}
+
+#btn-prever:active {
+  transform: translateY(0);
+}
+
+/* Seção de resultado */
+#resultado {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.graficoArima-box h2 {
+  color: #2c5f4f;
+  margin-bottom: 1.5rem;
+}
+
+#resultado-json {
+  background: #f4f4f4;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Chart wrapper */
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 500px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+#grafico-arima {
+  max-width: 100%;
+  height: 100% !important;
+}

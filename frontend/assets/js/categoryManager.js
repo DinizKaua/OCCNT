@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const diseasesList = document.getElementById('diseasesList');
         diseasesList.innerHTML = data.diseases.map(disease => 
             `<li class="drawer-item">
-                <a href="../observatory/observatory.html?disease=${disease.id}">${disease.name}</a>
+                <a href="../observatory/observatory.html?disease=${disease.id}&name=${encodeURIComponent(disease.name)}">${disease.name}</a>
             </li>`
         ).join('');
         

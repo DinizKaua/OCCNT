@@ -1,0 +1,38 @@
+function selecionarDoenca(nome, tipos) {
+  doencaSelecionada = nome;
+  tipoSelecionado = null;
+
+  // Remove seleção anterior
+  document.querySelectorAll('#lista-doencas .card').forEach(card => {
+    card.classList.remove('selected');
+  });
+
+  // Adiciona seleção ao card clicado
+  event.target.classList.add('selected');
+
+  document.getElementById("tipo-dado").classList.remove("hidden");
+  document.getElementById("titulo-tipo").textContent = `Tipos de dado para ${nome}`;
+  const container = document.getElementById("lista-tipos");
+  container.innerHTML = "";
+  tipos.forEach((t) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.textContent = t;
+    div.onclick = () => selecionarTipo(t);
+    container.appendChild(div);
+  });
+}
+
+function selecionarTipo(t) {
+  tipoSelecionado = t;
+
+  // Remove seleção anterior
+  document.querySelectorAll('#lista-tipos .card').forEach(card => {
+    card.classList.remove('selected');
+  });
+
+  // Adiciona seleção ao card clicado
+  event.target.classList.add('selected');
+
+  document.getElementById("parametros").classList.remove("hidden");
+}
