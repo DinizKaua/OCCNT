@@ -44,14 +44,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     categoriaSelecionada = categoriaValida.nome;
 
     // Atualiza título e mostra seção de doenças
-    document.getElementById("doencas").classList.remove("hidden");
-    document.getElementById("titulo-doencas").textContent = `Opções: ${nomeExibido}`;
+    document.getElementById("analyzed_data").classList.remove("hidden");
+    document.getElementById("data_title").textContent = `Opções: ${nomeExibido}`;
 
     // Busca doenças dessa categoria
     const resDoencas = await fetch(`${API_BASE}/categorias/${categoriaValida.nome}/doencas`);
     const doencas = await resDoencas.json();
 
-    const container = document.getElementById("lista-doencas");
+    const container = document.getElementById("data_list");
     container.innerHTML = "";
 
     doencas.forEach((d) => {
@@ -73,8 +73,8 @@ function selecionarDoenca(nome, tipos) {
   tipoSelecionado = null;
 
   // limpar resultados anteriores
-  document.getElementById("resultado").classList.add("hidden");
-  document.getElementById("resultado-json").textContent = "";
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("result-json").textContent = "";
 
   // resetar gráfico se já existir
   if (chart) {
@@ -82,9 +82,9 @@ function selecionarDoenca(nome, tipos) {
     chart = null;
   }
 
-  document.getElementById("tipo-dado").classList.remove("hidden");
-  document.getElementById("titulo-tipo").textContent = `Tipos de dado para ${nome}`;
-  const container = document.getElementById("lista-tipos");
+  document.getElementById("data_type").classList.remove("hidden");
+  document.getElementById("typo_title").textContent = `Tipos de dado para ${nome}`;
+  const container = document.getElementById("type_list");
   container.innerHTML = "";
   tipos.forEach((t) => {
     const div = document.createElement("div");
@@ -97,8 +97,8 @@ function selecionarDoenca(nome, tipos) {
 
 function selecionarTipo(t) {
   // limpar resultado da previsão anterior
-  document.getElementById("resultado").classList.add("hidden");
-  document.getElementById("resultado-json").textContent = "";
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("result-json").textContent = "";
 
   // resetar gráfico também
   if (chart) {
@@ -106,7 +106,7 @@ function selecionarTipo(t) {
     chart = null;
   }
   tipoSelecionado = t;
-  document.getElementById("parametros").classList.remove("hidden");
+  document.getElementById("parameters").classList.remove("hidden");
 }
 
 async function rodarPrevisao() {
@@ -135,9 +135,9 @@ async function rodarPrevisao() {
   console.log("Resposta da API /prever:", data);
 
   // mostra o JSON bruto também
-  const out = document.getElementById("resultado-json");
+  const out = document.getElementById("result-json");
   out.textContent = JSON.stringify(data, null, 2);
-  document.getElementById("resultado").classList.remove("hidden");
+  document.getElementById("result").classList.remove("hidden");
 
   desenharGrafico(data);
 }

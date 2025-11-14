@@ -2,12 +2,20 @@
   "title": "Doenças Osteomusculares e Articulares",
   "description": 
   
-  "nada ainda",
+  "As doenças osteomusculares e articulares afetam o sistema locomotor, incluindo ossos, músculos, articulações, ligamentos e tendões. Este grupo engloba condições de altíssima prevalência como osteoartrite, dor lombar crônica (lombalgia), osteoporose, fibromialgia e tendinopatias. Elas são a principal causa de dor crônica e incapacidade física em todo o mundo, limitando severamente a mobilidade, a autonomia e a qualidade de vida. O desenvolvimento dessas condições é frequentemente lento e progressivo, com sintomas como dor, rigidez e perda de função que se agravam com o tempo.\n\nUma combinação de fatores contribui para o surgimento desses distúrbios, com o envelhecimento populacional sendo um dos mais relevantes. O estilo de vida desempenha um papel crítico: o sedentarismo leva à fraqueza muscular e à perda de flexibilidade, enquanto a obesidade aumenta a sobrecarga mecânica sobre as articulações de carga, como joelhos e quadril. Adicionalmente, fatores ocupacionais (esforços repetitivos ou má ergonomia), lesões prévias e, em certos casos, predisposição genética, são fatores de risco significativos para o desgaste e inflamação do sistema musculoesquelético.",
   
   "diseases": [
     {
-      "name": "nada",
-      "id": "nada"
+      "name": "Osteoporose",
+      "id": "osteoporose"
+    },
+    {
+      "name": "Fibromialgia",
+      "id": "fibromialgia"
+    },
+    {
+      "name": "Tendinopatias",
+      "id": "tendinopatias"
     }
   ]
 }

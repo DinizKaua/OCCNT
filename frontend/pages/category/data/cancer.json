@@ -6,8 +6,12 @@
   
   "diseases": [
     {
-      "name": "nada",
-      "id": "nada"
+      "name": "Câncer de Mama",
+      "id": "cancer_mama"
+    },
+    {
+      "name": "Câncer de Próstata",
+      "id": "cancer_prostata"
     }
   ]
 }

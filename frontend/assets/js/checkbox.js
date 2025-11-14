@@ -3,16 +3,16 @@ function selecionarDoenca(nome, tipos) {
   tipoSelecionado = null;
 
   // Remove seleção anterior
-  document.querySelectorAll('#lista-doencas .card').forEach(card => {
+  document.querySelectorAll('#data_list .card').forEach(card => {
     card.classList.remove('selected');
   });
 
   // Adiciona seleção ao card clicado
   event.target.classList.add('selected');
 
-  document.getElementById("tipo-dado").classList.remove("hidden");
-  document.getElementById("titulo-tipo").textContent = `Tipos de dado para ${nome}`;
-  const container = document.getElementById("lista-tipos");
+  document.getElementById("data_type").classList.remove("hidden");
+  document.getElementById("type_title").textContent = `Tipos de dado para ${nome}`;
+  const container = document.getElementById("type_list");
   container.innerHTML = "";
   tipos.forEach((t) => {
     const div = document.createElement("div");
@@ -27,12 +27,12 @@ function selecionarTipo(t) {
   tipoSelecionado = t;
 
   // Remove seleção anterior
-  document.querySelectorAll('#lista-tipos .card').forEach(card => {
+  document.querySelectorAll('#type_list .card').forEach(card => {
     card.classList.remove('selected');
   });
 
   // Adiciona seleção ao card clicado
   event.target.classList.add('selected');
 
-  document.getElementById("parametros").classList.remove("hidden");
+  document.getElementById("parameters").classList.remove("hidden");
 }

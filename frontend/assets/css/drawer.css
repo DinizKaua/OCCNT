@@ -1,7 +1,7 @@
 /* Drawer/Gaveta */
 .drawer {
     margin: 2rem auto;
-    max-width: 1000px;
+    max-width: 1200px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -181,4 +181,62 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+@media (max-width: 480px) {
+  .drawer {
+    margin: 1rem 0.75rem;
+    border-radius: 6px;
+  }
+
+  .drawer:hover {
+    transform: none; /* Remove hover transform no mobile */
+  }
+
+  .drawer-header::before {
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .drawer-title {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    letter-spacing: 0.2px;
+  }
+
+  .drawer-title::after {
+    right: 1.25rem;
+    font-size: 0.8rem;
+  }
+
+  .drawer-content:not([hidden]) {
+    max-height: 700px;
+    padding: 1rem 1.25rem;
+  }
+
+  .drawer-list {
+    gap: 0.5rem;
+  }
+
+  .drawer-list li {
+    border-radius: 6px;
+  }
+
+  .drawer-list li a {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .drawer-list li::before {
+    width: 3px;
+  }
+
+  /* Desabilita hover effects em mobile */
+  .drawer-list li:hover {
+    background: #f8fafc;
+    border-color: rgba(4, 120, 87, 0.1);
+  }
+
+  .drawer-list li:hover::before {
+    height: 0;
+  }
 }

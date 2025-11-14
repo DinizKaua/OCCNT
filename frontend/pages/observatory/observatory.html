@@ -25,17 +25,17 @@
       </div>
     </section>
 
-    <section id="doencas" class="hidden">
-      <h2 id="titulo-doencas">Opcões</h2>
-      <div id="lista-doencas" class="cards"></div>
+    <section id="analyzed_data" class="options_box hidden">
+      <h2 id="data_title" >Opcões</h2>
+      <div id="data_list" class="cards"></div>
     </section>
 
-    <section id="tipo-dado" class="hidden">
-      <h2 id="titulo-tipo">Tipos de dado</h2>
-      <div id="lista-tipos" class="cards"></div>
+    <section id="data_type" class="options_box hidden">
+      <h2 id="type_title" >Tipos de dado</h2>
+      <div id="type_list" class="cards"></div>
     </section>
 
-    <section id="parametros" class="hidden">
+    <section id="parameters" class="options_box hidden">
       <h2>Parâmetros</h2>
       <label>
         Estado (TABNET):
@@ -48,9 +48,9 @@
       <button id="btn-prever">Rodar ARIMA</button>
     </section>
 
-    <section id="resultado" class="graficoArima-box hidden" >
+    <section id="result" class="options_box hidden" >
       <h2>Resultado</h2>
-      <pre hidden id="resultado-json"></pre>
+      <pre hidden id="result-json"></pre>
       <div class="chart-wrapper">
         <canvas id="grafico-arima"></canvas>
       </div>
