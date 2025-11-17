@@ -1,28 +1,23 @@
-
-
-
 const API_BASE = "http://localhost:8000";
 
 let categoriaSelecionada = null;
 let doencaSelecionada = null;
 let tipoSelecionado = null;
-let chart = null; // referência pro Chart.js
+let chart = null;       // gráfico ARIMA
+let chartTheta = null;  // gráfico Theta
 
 document.addEventListener("DOMContentLoaded", async function () {
-  
-
-  // Lê o parâmetro da URL (ex: categoria.html?nome=Cardiovascular)
+  // Lê o parâmetro da URL (ex: observatory.html?disease=sepse&name=Sepse)
   const urlParams = new URLSearchParams(window.location.search);
-  const nomeCategoria = urlParams.get("disease");
+  const nomeCategoriaSlug = urlParams.get("disease");
   const nomeExibido = urlParams.get("name");
 
   const tituloPagina = document.getElementById("categoryTitle");
-  if (tituloPagina && nomeCategoria) {
-    tituloPagina.textContent = `${nomeExibido}`;
+  if (tituloPagina && nomeExibido) {
+    tituloPagina.textContent = nomeExibido;
   }
 
-  // Verifica se a categoria foi passada
-  if (!nomeCategoria) {
+  if (!nomeCategoriaSlug) {
     console.error("Nenhuma categoria especificada na URL");
     alert("Categoria não especificada.");
     return;
@@ -31,9 +26,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     // Verifica se a categoria existe na API
     const res = await fetch(`${API_BASE}/categorias`);
+    if (!res.ok) {
+      throw new Error("Falha ao carregar categorias");
+    }
     const categorias = await res.json();
+
     const categoriaValida = categorias.find(
-      (c) => c.nome.toLowerCase() === nomeCategoria.toLowerCase()
+      (c) => c.nome.toLowerCase() === nomeCategoriaSlug.toLowerCase()
     );
 
     if (!categoriaValida) {
@@ -44,14 +43,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     categoriaSelecionada = categoriaValida.nome;
 
     // Atualiza título e mostra seção de doenças
-    document.getElementById("analyzed_data").classList.remove("hidden");
-    document.getElementById("data_title").textContent = `Opções: ${nomeExibido}`;
+    const analyzedSection = document.getElementById("analyzed_data");
+    if (analyzedSection) {
+      analyzedSection.classList.remove("hidden");
+    }
+
+    const dataTitle = document.getElementById("data_title");
+    if (dataTitle) {
+      dataTitle.textContent = `Opções: ${nomeExibido || categoriaValida.nome}`;
+    }
 
     // Busca doenças dessa categoria
-    const resDoencas = await fetch(`${API_BASE}/categorias/${categoriaValida.nome}/doencas`);
+    const resDoencas = await fetch(
+      `${API_BASE}/categorias/${categoriaValida.nome}/doencas`
+    );
+    if (!resDoencas.ok) {
+      throw new Error("Falha ao carregar doenças");
+    }
     const doencas = await resDoencas.json();
 
     const container = document.getElementById("data_list");
+    if (!container) return;
     container.innerHTML = "";
 
     doencas.forEach((d) => {
@@ -67,25 +79,45 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 });
 
-
 function selecionarDoenca(nome, tipos) {
   doencaSelecionada = nome;
   tipoSelecionado = null;
 
   // limpar resultados anteriores
-  document.getElementById("result").classList.add("hidden");
-  document.getElementById("result-json").textContent = "";
+  const resultSection = document.getElementById("result");
+  if (resultSection) {
+    resultSection.classList.add("hidden");
+  }
+  const resultJson = document.getElementById("result-json");
+  if (resultJson) {
+    resultJson.textContent = "";
+  }
 
-  // resetar gráfico se já existir
+  // resetar gráficos se já existirem
   if (chart) {
     chart.destroy();
     chart = null;
   }
+  if (chartTheta) {
+    chartTheta.destroy();
+    chartTheta = null;
+  }
 
-  document.getElementById("data_type").classList.remove("hidden");
-  document.getElementById("typo_title").textContent = `Tipos de dado para ${nome}`;
+  // mostrar opções de tipo de dado
+  const dataTypeSection = document.getElementById("data_type");
+  if (dataTypeSection) {
+    dataTypeSection.classList.remove("hidden");
+  }
+
+  const typeTitle = document.getElementById("type_title");
+  if (typeTitle) {
+    typeTitle.textContent = `Tipos de dado para ${nome}`;
+  }
+
   const container = document.getElementById("type_list");
+  if (!container) return;
   container.innerHTML = "";
+
   tipos.forEach((t) => {
     const div = document.createElement("div");
     div.className = "card";
@@ -97,22 +129,48 @@ function selecionarDoenca(nome, tipos) {
 
 function selecionarTipo(t) {
   // limpar resultado da previsão anterior
-  document.getElementById("result").classList.add("hidden");
-  document.getElementById("result-json").textContent = "";
+  const resultSection = document.getElementById("result");
+  if (resultSection) {
+    resultSection.classList.add("hidden");
+  }
+  const resultJson = document.getElementById("result-json");
+  if (resultJson) {
+    resultJson.textContent = "";
+  }
 
-  // resetar gráfico também
+  // resetar gráficos
   if (chart) {
     chart.destroy();
     chart = null;
   }
+  if (chartTheta) {
+    chartTheta.destroy();
+    chartTheta = null;
+  }
+
   tipoSelecionado = t;
-  document.getElementById("parameters").classList.remove("hidden");
+
+  const paramsSection = document.getElementById("parameters");
+  if (paramsSection) {
+    paramsSection.classList.remove("hidden");
+  }
 }
 
 async function rodarPrevisao() {
-  
-  const estado = document.getElementById("estado").value || "21 Maranhão";
-  const anos = parseInt(document.getElementById("anos-previsao").value || "3", 10);
+  if (!categoriaSelecionada || !doencaSelecionada || !tipoSelecionado) {
+    alert("Selecione uma opção de dado e um tipo de dado antes de rodar a previsão.");
+    return;
+  }
+
+  const estadoInput = document.getElementById("estado");
+  const anosInput = document.getElementById("anos-previsao");
+
+  const estado =
+    (estadoInput && estadoInput.value) ? estadoInput.value : "21 Maranhão";
+  const anos = parseInt(
+    (anosInput && anosInput.value) ? anosInput.value : "3",
+    10
+  );
 
   const payload = {
     categoria: categoriaSelecionada,
@@ -123,76 +181,97 @@ async function rodarPrevisao() {
     alpha: 0.95,
   };
 
-  const res = await fetch(`${API_BASE}/prever`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const [resArima, resTheta] = await Promise.all([
+      fetch(`${API_BASE}/prever`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }),
+      fetch(`${API_BASE}/prever/theta`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }),
+    ]);
 
-  const data = await res.json();
-  console.log("Resposta da API /prever:", data);
+    if (!resArima.ok || !resTheta.ok) {
+      console.error("Erro nas respostas da API:", resArima, resTheta);
+      alert("Erro ao obter previsões. Verifique o backend.");
+      return;
+    }
 
-  // mostra o JSON bruto também
-  const out = document.getElementById("result-json");
-  out.textContent = JSON.stringify(data, null, 2);
-  document.getElementById("result").classList.remove("hidden");
+    const dataArima = await resArima.json();
+    const dataTheta = await resTheta.json();
 
-  desenharGrafico(data);
+    console.log("Resposta da API /prever:", dataArima);
+    console.log("Resposta da API /prever/theta:", dataTheta);
+
+    const out = document.getElementById("result-json");
+    if (out) {
+      out.textContent = JSON.stringify(
+        { arima: dataArima, theta: dataTheta },
+        null,
+        2
+      );
+    }
+
+    const resultSection = document.getElementById("result");
+    if (resultSection) {
+      resultSection.classList.remove("hidden");
+    }
+
+    desenharGrafico(dataArima);
+    desenharGraficoTheta(dataTheta);
+  } catch (err) {
+    console.error("Erro ao rodar previsão:", err);
+    alert("Erro ao fazer a previsão. Veja o console para mais detalhes.");
+  }
 }
 
 function desenharGrafico(data) {
+  const canvas = document.getElementById("grafico-arima");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
 
-  const ctx = document.getElementById("grafico-arima").getContext("2d");
-
-  // ---- 1) histórico ----
+  // histórico
   const anosHistorico = data.dados_originais.map((p) => p.ano);
   const valoresHistorico = data.dados_originais.map((p) => p.valor);
 
-  // último ponto real
-  const ultimoAno = anosHistorico[anosHistorico.length - 1];
   const ultimoValor = valoresHistorico[valoresHistorico.length - 1];
 
-  // ---- 2) previsão ----
+  // previsão
   const anosPrev = data.previsao.map((p) => p.ano);
   const valoresPrev = data.previsao.map((p) => p.valor);
   const liPrev = data.previsao.map((p) => p.li);
   const lsPrev = data.previsao.map((p) => p.ls);
 
-  // ---- 3) eixo final de anos ----
-  // vamos começar pelo histórico e emendar a previsão
   const labels = [...anosHistorico, ...anosPrev];
 
-  // ---- 4) dataset do histórico ----
-  // fica igual ao histórico (nada de null)
   const histData = [...valoresHistorico];
 
-  // ---- 5) dataset da previsão (contínuo) ----
-  // aqui está o truque: a previsão vai começar no último ano real,
-  // usando o valor real, e depois segue com os valores previstos
-  // isso evita aquele "salto" visual
   const prevData = [
-    ...Array(anosHistorico.length - 1).fill(null), // até o penúltimo ano, nada
-    ultimoValor, // no último ano real, colocamos o valor real
-    ...valoresPrev, // e depois os previstos de fato
+    ...Array(anosHistorico.length - 1).fill(null),
+    ultimoValor,
+    ...valoresPrev,
   ];
 
-  // ---- 6) limites de confiança ----
-  // mesma lógica: começam no último ano real com o valor real
   const liData = [
     ...Array(anosHistorico.length - 1).fill(null),
-    ultimoValor, // ancorar
+    ultimoValor,
     ...liPrev,
   ];
 
   const lsData = [
     ...Array(anosHistorico.length - 1).fill(null),
-    ultimoValor, // ancorar
+    ultimoValor,
     ...lsPrev,
   ];
 
-  // destrói gráfico antigo
   if (chart) {
     chart.destroy();
   }
@@ -276,4 +355,130 @@ function desenharGrafico(data) {
     },
   });
 }
-document.getElementById("btn-prever").addEventListener("click", rodarPrevisao);
+
+function desenharGraficoTheta(data) {
+  const canvas = document.getElementById("grafico-theta");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  // histórico
+  const anosHistorico = data.dados_originais.map((p) => p.ano);
+  const valoresHistorico = data.dados_originais.map((p) => p.valor);
+
+  const ultimoValor = valoresHistorico[valoresHistorico.length - 1];
+
+  // previsão
+  const anosPrev = data.previsao.map((p) => p.ano);
+  const valoresPrev = data.previsao.map((p) => p.valor);
+  const liPrev = data.previsao.map((p) => p.li);
+  const lsPrev = data.previsao.map((p) => p.ls);
+
+  const labels = [...anosHistorico, ...anosPrev];
+
+  const histData = [...valoresHistorico];
+
+  const prevData = [
+    ...Array(anosHistorico.length - 1).fill(null),
+    ultimoValor,
+    ...valoresPrev,
+  ];
+
+  const liData = [
+    ...Array(anosHistorico.length - 1).fill(null),
+    ultimoValor,
+    ...liPrev,
+  ];
+
+  const lsData = [
+    ...Array(anosHistorico.length - 1).fill(null),
+    ultimoValor,
+    ...lsPrev,
+  ];
+
+  if (chartTheta) {
+    chartTheta.destroy();
+  }
+
+  chartTheta = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Histórico",
+          data: histData,
+          borderColor: "rgba(14,165,233,1)",
+          backgroundColor: "rgba(14,165,233,0.25)",
+          tension: 0.25,
+          spanGaps: true,
+          pointRadius: 3,
+        },
+        {
+          label: "Previsão (Theta)",
+          data: prevData,
+          borderColor: "rgba(250,204,21,1)",
+          backgroundColor: "rgba(250,204,21,0.15)",
+          borderDash: [5, 5],
+          tension: 0.25,
+          spanGaps: true,
+          pointRadius: 3,
+        },
+        {
+          label: "Limite inferior (Theta)",
+          data: liData,
+          borderColor: "rgba(248,113,113,0.7)",
+          borderDash: [3, 3],
+          pointRadius: 0,
+          tension: 0.25,
+          spanGaps: true,
+        },
+        {
+          label: "Limite superior (Theta)",
+          data: lsData,
+          borderColor: "rgba(190,242,100,0.7)",
+          borderDash: [3, 3],
+          pointRadius: 0,
+          tension: 0.25,
+          spanGaps: true,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false,
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#000000ff",
+          },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#000000ff",
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: "#000000ff",
+          },
+        },
+        title: {
+          display: true,
+          text: `${data.estado_rotulo} • ${data.modelo}`,
+          color: "#000000ff",
+        },
+      },
+    },
+  });
+}
+
+document
+  .getElementById("btn-prever")
+  .addEventListener("click", rodarPrevisao);
