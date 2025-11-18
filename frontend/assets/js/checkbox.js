@@ -36,3 +36,16 @@ function selecionarTipo(t) {
 
   document.getElementById("parameters").classList.remove("hidden");
 }
+
+// dps eu caço outro lugar pra essa funcao (tela cheia dos graficos)
+function abrirFullscreen(canvasId) {
+  const wrapper = document.getElementById(canvasId).closest('.chart-wrapper');
+  
+  if (!wrapper.classList.contains('fullscreen')) {
+    wrapper.classList.add('fullscreen');
+    wrapper.querySelector('.btn-fullscreen').textContent = '✕ Fechar';
+  } else {
+    wrapper.classList.remove('fullscreen');
+    wrapper.querySelector('.btn-fullscreen').textContent = '⛶ Tela Cheia';
+  }
+}

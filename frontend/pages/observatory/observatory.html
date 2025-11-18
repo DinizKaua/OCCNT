@@ -45,17 +45,19 @@
         Anos de previsão:
         <input type="number" id="anos-previsao" value="3" min="1" max="10" />
       </label>
-      <button id="btn-prever">Rodar ARIMA</button>
+      <button id="btn-prever">RODAR PREVISÃO</button>
     </section>
 
     <section id="result" class="options_box hidden">
       <h2>Resultado</h2>
       <pre hidden id="result-json"></pre>
       <div class="chart-wrapper">
-        <canvas id="grafico-arima"></canvas>
+        <button class="btn-fullscreen" onclick="abrirFullscreen('grafico-arima')">⛶ Tela Cheia</button>
+        <canvas id="grafico-arima" class="grafico"></canvas>
       </div>
       <div class="chart-wrapper">
-        <canvas id="grafico-theta"></canvas>
+        <button class="btn-fullscreen" onclick="abrirFullscreen('grafico-theta')">⛶ Tela Cheia</button>
+        <canvas id="grafico-theta" class="grafico"></canvas>
       </div>
     </section>
   </main>

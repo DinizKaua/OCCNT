@@ -212,19 +212,56 @@ section:not(.hero-section) h2 {
 /* ============================================
    GRÁFICO
    ============================================ */
+.btn-fullscreen {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(74, 157, 126, 0.9);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  z-index: 10;
+  transition: background 0.3s;
+}
+
+.btn-fullscreen:hover {
+  background: #3d8469;
+}
+
+.chart-wrapper.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  z-index: 9999;
+  margin: 0;
+  border-radius: 0;
+  background: white;
+}
+
+.chart-wrapper.fullscreen .grafico {
+  height: 100% !important;
+  min-width: auto !important;
+}
 .chart-wrapper {
   position: relative;
   width: 100%;
   max-width: 100%;
   height: 500px;
-  margin: 0 auto;
+  margin: 30px auto;
   padding: 1.5rem;
   background: #fafafa;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
 }
 
-#grafico-arima {
+.grafico {
   max-width: 100%;
   height: 100% !important;
 }
@@ -280,7 +317,15 @@ section:not(.hero-section) h2 {
 
 /* Mobile (até 480px) */
 @media (max-width: 480px) {
-  section:not(.hero-section) {
+  .btn-fullscreen {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 0.6rem;
+    max-width: 5rem;
+  }
+  secti
+  on:not(.hero-section) {
     padding: 1rem 1rem;
   }
 
@@ -333,14 +378,46 @@ section:not(.hero-section) h2 {
   }
 
   #result {
+
     padding: 1.5rem 1.25rem;
     margin-left: 1rem;
     margin-right: 1rem;
   }
 
   .chart-wrapper {
-    height: 300px;
-    padding: 1rem 0.75rem;
+    min-height: 400px;
+    padding: 0.5rem;
+    margin: 15px 0.5rem;
+    overflow-x: auto;
+  }
+  .grafico{
+    min-width: 500px;
+  }
+
+  .chart-wrapper.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    z-index: 9999;
+  }
+  
+  .chart-wrapper.fullscreen .grafico {
+    transform: rotate(90deg);
+    width: 100vh !important;
+    height: 100vw !important;
+    min-width: 100%;
+    min-height: 85%;
+    max-width: 100vh;
+    max-height: 100vw;
+    
   }
 
   .autocomplete-item {
