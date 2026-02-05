@@ -62,10 +62,10 @@ def _normalizar_meses(colunas: List[str]) -> List[str]:
 
 
 def _ler_header_bruto(caminho_csv: str) -> Tuple[List[str], int, str]:
-    with open(caminho_csv, "r", encoding="ISO-8859-1") as f:
+    with open(caminho_csv, "r", encoding="utf-8") as f:
         linhas = f.read().splitlines()
     # alguns TABNETs têm o header na linha 9, outros na 8
-    header_idx = 9 if len(linhas) > 9 and "Unidade da Federação" in linhas[9] else 8
+    header_idx = 0
     header_cells = linhas[header_idx].split(";")
     freq = _detectar_freq_por_header(header_cells)
     colunas = _normalizar_meses(header_cells)
@@ -75,7 +75,7 @@ def _ler_header_bruto(caminho_csv: str) -> Tuple[List[str], int, str]:
 def _carregar_df_tabnet(caminho_csv: str, colunas: List[str], header_idx: int) -> pd.DataFrame:
     df = pd.read_csv(
         caminho_csv,
-        encoding="ISO-8859-1",
+        encoding="utf-8",
         sep=";",
         header=None,
         skiprows=header_idx + 1,

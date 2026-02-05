@@ -23,26 +23,37 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 CATEGORIAS: Dict[str, Dict] = {
-    "sepse": {
-        "descricao": "Doenças e condições relacionadas à sepse.",
+    "obitos-cardiovasculares": {
+        "descricao": "Doenças e condições cardiovasculares.",
         "doencas": {
-            "Óbitos por Sepse": {
+            "Óbitos por Doenças Cardiovasculares": {
                 "tipos_dado": {
-                    "principal": os.path.join(DATA_DIR, "Obitos_Sepse.csv")
+                    "principal": os.path.join(DATA_DIR, "obitos-cardiovasculares.csv")
                 }
-            },
-            "Respiradores Artificiais por Sepse": {
+            }
+        }
+    },
+    "hipertensao-arterial": {
+        "descricao": "Óbitos relacionados à hipertensão.",
+        "doencas": {
+            "Óbitos por Hipertensão": {
                 "tipos_dado": {
-                    "principal": os.path.join(
-                        DATA_DIR,
-                        "RespiradoresArtificiais_Sepse.csv",
-                    )
+                    "principal": os.path.join(DATA_DIR, "obitos-hipertensao.csv")
+                }       
+            }
+        }
+    },
+    "obitos-respiratorias": {
+        "descricao": "Óbitos relacionados a doenças respiratórias.",
+        "doencas": {
+            "Óbitos por Doenças Respiratórias": {
+                "tipos_dado": {
+                    "principal": os.path.join(DATA_DIR, "obitos-respiratoria.csv")
                 }
-            },
-        },
+            }
+        }
     }
 }
-
 
 @app.get("/categorias")
 def listar_categorias():
