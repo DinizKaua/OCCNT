@@ -6,6 +6,14 @@
   
   "diseases": [
     {
+      "name": "Obitos Gerais por Doenças Cardiovasculares",
+      "id": "obitos-cardiovasculares"
+    },
+    {
+      "name": "Acidente Vascular Cerebral (AVC)",
+      "id": "acidente-vascular-cerebral"
+    },
+    {
       "name": "Hipertensão Arterial",
       "id": "hipertensao-arterial"
     },

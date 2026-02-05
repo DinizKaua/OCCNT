@@ -6,6 +6,10 @@
   
   "diseases": [
     {
+      "name": "Obitos Gerais por Doenças Respiratórias",
+      "id": "obitos-respiratorias"
+    },
+    {
       "name": "Asma",
       "id": "asma"
     },

@@ -181,6 +181,15 @@ async function rodarPrevisao() {
     alpha: 0.95,
   };
 
+  console.log("=== Parâmetros enviados para a API ===");
+  console.log("Categoria:", payload.categoria);
+  console.log("Doença:", payload.doenca);
+  console.log("Tipo de dado:", payload.tipo_dado);
+  console.log("Estado:", payload.estado);
+  console.log("Anos de previsão:", payload.anos_previsao);
+  console.log("Alpha:", payload.alpha);
+  console.log("Payload completo:", JSON.stringify(payload, null, 2));
+
   try {
     const [resArima, resTheta] = await Promise.all([
       fetch(`${API_BASE}/prever`, {
