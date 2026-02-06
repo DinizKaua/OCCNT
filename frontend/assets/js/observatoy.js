@@ -488,6 +488,49 @@ function desenharGraficoTheta(data) {
   });
 }
 
+function exportChartAlignedToCSV(chartInstance, nomeArquivo = "dados_grafico.csv") {
+  if (!chartInstance) {
+    alert("Nenhum gráfico disponível para exportar.");
+    return;
+  }
+
+  const labels = chartInstance.data.labels; // eixo X (anos)
+  const datasets = chartInstance.data.datasets; // Histórico, Previsão, Limites
+
+  // Cabeçalho
+  const csvHeader = ["Ano", ...datasets.map(ds => ds.label)];
+  let csv = csvHeader.join(",") + "\n";
+
+  // Cada linha representa um ano
+  for (let i = 0; i < labels.length; i++) {
+    const row = [labels[i]];
+    datasets.forEach(ds => {
+      // Se for null ou undefined, deixa vazio
+      row.push(ds.data[i] != null ? ds.data[i] : "");
+    });
+    csv += row.join(",") + "\n";
+  }
+
+  // Download do CSV
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nomeArquivo;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Botão exportar ARIMA
+document.getElementById("btn-export-arima").addEventListener("click", () => {
+  exportChartAlignedToCSV(chart, "previsao_arima.csv");
+});
+
+// Botão exportar Theta
+document.getElementById("btn-export-theta").addEventListener("click", () => {
+  exportChartAlignedToCSV(chartTheta, "previsao_theta.csv");
+});
+
 document
   .getElementById("btn-prever")
   .addEventListener("click", rodarPrevisao);
