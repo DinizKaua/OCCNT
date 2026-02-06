@@ -173,14 +173,13 @@ def gerar_series_anuais(
         ts_log,
         seasonal=False,
         D=0,
-        trend="t",
-        start_p=1,
-        start_q=1,
-        max_p=8,
-        max_q=8,
+        trend="c",
+        start_p=0,
+        start_q=0,
+        max_p=3,
+        max_q=3,
         stepwise=True,
         suppress_warnings=True,
-        trace=False,
     )
 
     forecast_log, conf_int_log = modelo.predict(
