@@ -52,6 +52,16 @@ CATEGORIAS: Dict[str, Dict] = {
                 }
             }
         }
+    },
+    "obitos-diabetes": {
+        "descricao": "Óbitos relacionados à diabetes.",
+        "doencas": {
+            "Óbitos por Diabetes": {
+                "tipos_dado": {
+                    "principal": os.path.join(DATA_DIR, "obitos-diabetes-mensal.csv")
+                }
+            }
+        }
     }
 }
 
