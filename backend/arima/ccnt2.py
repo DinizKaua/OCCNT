@@ -172,12 +172,12 @@ def gerar_series_anuais(
     modelo = auto_arima(
         ts_log,
         seasonal=False,
-        D=0,
-        trend="c",
+        D=1,
+        trend=None,
         start_p=0,
         start_q=0,
-        max_p=3,
-        max_q=3,
+        max_p=8,
+        max_q=8,
         stepwise=True,
         suppress_warnings=True,
     )
