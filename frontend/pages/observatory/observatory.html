@@ -38,6 +38,10 @@
     <section id="parameters" class="options_box hidden">
       <h2>Parâmetros</h2>
       <label>
+        CSV (mensal ou anual):
+        <input type="file" id="csv-file" accept=".csv" />
+      </label>
+      <label>
         Estado (TABNET):
         <input type="text" id="estado" value="21 Maranhão" />
       </label>
@@ -45,17 +49,31 @@
         Anos de previsão:
         <input type="number" id="anos-previsao" value="3" min="1" max="10" />
       </label>
+      <label>
+        Períodos de previsão (mensal):
+        <input type="number" id="periodos-previsao" value="12" min="1" max="120" />
+      </label>
+      <label>
+        Alpha:
+        <input type="number" id="alpha" value="0.95" min="0.5" max="0.99" step="0.01" />
+      </label>
+      <label>
+        Sazonal (mensal):
+        <input type="checkbox" id="seasonal" checked />
+      </label>
       <button id="btn-prever">RODAR PREVISÃO</button>
+      <button id="btn-mensal">CARREGAR JSON MENSAL</button>
+      <button id="btn-teste-csv">TESTE</button>
     </section>
 
     <section id="result" class="options_box hidden">
       <h2>Resultado</h2>
       <pre hidden id="result-json"></pre>
-      <div class="chart-wrapper">
+      <div class="chart-wrapper" id="chart-arima-wrapper">
         <button class="btn-fullscreen" onclick="abrirFullscreen('grafico-arima')">⛶ Tela Cheia</button>
         <canvas id="grafico-arima" class="grafico"></canvas>
       </div>
-      <div class="chart-wrapper">
+      <div class="chart-wrapper" id="chart-theta-wrapper">
         <button class="btn-fullscreen" onclick="abrirFullscreen('grafico-theta')">⛶ Tela Cheia</button>
         <canvas id="grafico-theta" class="grafico"></canvas>
       </div>
@@ -70,7 +88,6 @@
   </main>
 
   <footer><small>Laboratório de Inteligência Interativa</small></footer>
-  <script src="../../assets/js/observatoy.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../../assets/js/observatoy.js"></script>
   <script src="../../assets/js/estados.js"></script>

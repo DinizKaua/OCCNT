@@ -1,10 +1,57 @@
-# Ignorar a pasta do ambiente virtual (venv)
-venv/
+# --------------------
+# Rust (Cargo)
+# --------------------
+/target/
+**/*.rs.bk
+Cargo.lock
+# (se for binário/aplicação, você pode versionar Cargo.lock removendo a linha acima)
 
-# Ignorar pastas de cache do Python
+# --------------------
+# Python
+# --------------------
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+ENV/
+.env
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.ipynb_checkpoints/
+.pytype/
+.pyre/
 
-# Ignorar arquivos de log
-*.log
+# IDE / ferramentas comuns
+.vscode/
+.idea/
 
-.python-version
+# --------------------
+# R
+# --------------------
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.Rproj
+.Rcheck/
+.Rcache/
+.Rtmp/
+renv/library/
+packrat/lib*/
+packrat/src*/
+
+# Se usar Quarto / R Markdown
+*_files/
+*_cache/

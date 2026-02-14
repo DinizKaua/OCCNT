@@ -1,0 +1,7 @@
+/home/lawliet/OCCNT/backend/arima/target/release/deps/is_terminal_polyfill-36c9c5935b542a3f.d: /home/lawliet/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/is_terminal_polyfill-1.70.2/src/lib.rs
+
+/home/lawliet/OCCNT/backend/arima/target/release/deps/libis_terminal_polyfill-36c9c5935b542a3f.rlib: /home/lawliet/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/is_terminal_polyfill-1.70.2/src/lib.rs
+
+/home/lawliet/OCCNT/backend/arima/target/release/deps/libis_terminal_polyfill-36c9c5935b542a3f.rmeta: /home/lawliet/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/is_terminal_polyfill-1.70.2/src/lib.rs
+
+/home/lawliet/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/is_terminal_polyfill-1.70.2/src/lib.rs:
