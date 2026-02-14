@@ -760,6 +760,43 @@ function desenharGraficoMensal(data) {
   });
 }
 
+// ===== EXPORTAR ARIMA PARA CSV =====
+function exportarArimaParaCSV() {
+  if (!chart) {
+    alert("Nenhum gráfico ARIMA disponível para exportar.");
+    return;
+  }
+
+  const labels = chart.data.labels;        // eixo X (ano ou mês)
+  const datasets = chart.data.datasets;   // Histórico, Previsão, LI, LS
+
+  let csv = "Periodo," + datasets.map(ds => ds.label).join(",") + "\n";
+
+  for (let i = 0; i < labels.length; i++) {
+    const linha = [labels[i]];
+
+    datasets.forEach(ds => {
+      const valor = ds.data[i];
+      linha.push(valor != null ? Number(valor).toFixed(2) : "");
+    });
+
+    csv += linha.join(",") + "\n";
+  }
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "arima_previsao.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
+
 document
   .getElementById("btn-prever")
   .addEventListener("click", rodarPrevisao);
@@ -771,3 +808,6 @@ document
 document
   .getElementById("btn-teste-csv")
   .addEventListener("click", rodarPrevisaoCsv);
+document
+  .getElementById("btn-export-arima")
+  .addEventListener("click", exportarArimaParaCSV);
