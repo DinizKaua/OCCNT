@@ -1,5 +1,4 @@
 # backend/main.py
-import json
 import os
 import traceback
 from fastapi import FastAPI, HTTPException
@@ -9,7 +8,6 @@ from typing import Dict
 from models import PrevisaoRequest, PrevisaoResponse
 from arima.ccnt2 import gerar_series_anuais
 from arima.theta import gerar_series_anuais as gerar_series_anuais_theta
-from teste import router as teste_router
 
 app = FastAPI(title="API ARIMA Doenças")
 
@@ -21,12 +19,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(teste_router)
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-JSON_DIR = os.path.join(BASE_DIR, "json")
-OUT_MENSAL_PATH = os.path.join(JSON_DIR, "out_mensal.json")
 
 CATEGORIAS: Dict[str, Dict] = {
     "obitos-cardiovasculares": {
@@ -184,21 +178,4 @@ def prever_theta(req: PrevisaoRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Erro ao gerar previsão (Theta): {type(e).__name__}: {repr(e)}",
-        )
-
-
-@app.get("/prever/mensal")
-def prever_mensal():
-    if not os.path.exists(OUT_MENSAL_PATH):
-        raise HTTPException(
-            status_code=404,
-            detail=f"Arquivo JSON mensal não encontrado: {OUT_MENSAL_PATH}",
-        )
-    try:
-        with open(OUT_MENSAL_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"JSON mensal inválido: {type(e).__name__}: {repr(e)}",
         )

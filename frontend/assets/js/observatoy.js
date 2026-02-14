@@ -11,39 +11,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   const urlParams = new URLSearchParams(window.location.search);
   const nomeCategoriaSlug = urlParams.get("disease");
   const nomeExibido = urlParams.get("name");
-  const modoTeste = urlParams.get("teste") === "1";
 
   const tituloPagina = document.getElementById("categoryTitle");
-  if (tituloPagina) {
-    if (modoTeste) {
-      tituloPagina.textContent = "Teste";
-    } else if (nomeExibido) {
-      tituloPagina.textContent = nomeExibido;
-    }
-  }
-
-  if (modoTeste) {
-    const analyzedSection = document.getElementById("analyzed_data");
-    if (analyzedSection) {
-      analyzedSection.classList.add("hidden");
-    }
-    const dataTypeSection = document.getElementById("data_type");
-    if (dataTypeSection) {
-      dataTypeSection.classList.add("hidden");
-    }
-    const btnPrever = document.getElementById("btn-prever");
-    if (btnPrever) {
-      btnPrever.style.display = "none";
-    }
-    const btnMensal = document.getElementById("btn-mensal");
-    if (btnMensal) {
-      btnMensal.style.display = "none";
-    }
-    const paramsSection = document.getElementById("parameters");
-    if (paramsSection) {
-      paramsSection.classList.remove("hidden");
-    }
-    return;
+  if (tituloPagina && nomeExibido) {
+    tituloPagina.textContent = nomeExibido;
   }
 
   if (!nomeCategoriaSlug) {
@@ -220,11 +191,6 @@ async function rodarPrevisao() {
   console.log("Payload completo:", JSON.stringify(payload, null, 2));
 
   try {
-    const thetaWrapper = document.getElementById("chart-theta-wrapper");
-    if (thetaWrapper) {
-      thetaWrapper.style.display = "";
-    }
-
     const [resArima, resTheta] = await Promise.all([
       fetch(`${API_BASE}/prever`, {
         method: "POST",
@@ -273,130 +239,6 @@ async function rodarPrevisao() {
   } catch (err) {
     console.error("Erro ao rodar previsão:", err);
     alert("Erro ao fazer a previsão. Veja o console para mais detalhes.");
-  }
-}
-
-async function rodarPrevisaoMensal() {
-  try {
-    const res = await fetch(`${API_BASE}/prever/mensal`);
-    if (!res.ok) {
-      console.error("Erro na resposta da API:", res);
-      alert("Erro ao obter previsão mensal. Verifique o backend.");
-      return;
-    }
-
-    const data = await res.json();
-    console.log("Resposta da API /prever/mensal:", data);
-
-    const out = document.getElementById("result-json");
-    if (out) {
-      out.textContent = JSON.stringify(data, null, 2);
-    }
-
-    const resultSection = document.getElementById("result");
-    if (resultSection) {
-      resultSection.classList.remove("hidden");
-    }
-
-    const thetaWrapper = document.getElementById("chart-theta-wrapper");
-    if (thetaWrapper) {
-      thetaWrapper.style.display = "none";
-    }
-    if (chartTheta) {
-      chartTheta.destroy();
-      chartTheta = null;
-    }
-
-    desenharGraficoMensal(data);
-  } catch (err) {
-    console.error("Erro ao rodar previsão mensal:", err);
-    alert("Erro ao fazer a previsão mensal. Veja o console para mais detalhes.");
-  }
-}
-
-async function rodarPrevisaoCsv() {
-  const fileInput = document.getElementById("csv-file");
-  const estadoInput = document.getElementById("estado");
-  const anosInput = document.getElementById("anos-previsao");
-  const periodosInput = document.getElementById("periodos-previsao");
-  const alphaInput = document.getElementById("alpha");
-  const seasonalInput = document.getElementById("seasonal");
-
-  if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-    alert("Selecione um arquivo CSV.");
-    return;
-  }
-
-  const estado =
-    (estadoInput && estadoInput.value) ? estadoInput.value : "21 Maranhão";
-  const anos = parseInt(
-    (anosInput && anosInput.value) ? anosInput.value : "3",
-    10
-  );
-  const periodos = parseInt(
-    (periodosInput && periodosInput.value) ? periodosInput.value : "12",
-    10
-  );
-  const alpha = parseFloat(
-    (alphaInput && alphaInput.value) ? alphaInput.value : "0.95"
-  );
-  const seasonal = !!(seasonalInput && seasonalInput.checked);
-
-  const form = new FormData();
-  form.append("file", fileInput.files[0]);
-  form.append("estado", estado);
-  form.append("modo", "auto");
-  form.append("anos_previsao", String(anos));
-  form.append("periodos_previsao", String(periodos));
-  form.append("alpha", String(alpha));
-  form.append("seasonal", seasonal ? "true" : "false");
-
-  try {
-    const res = await fetch(`${API_BASE}/teste/prever/csv`, {
-      method: "POST",
-      body: form,
-    });
-    if (!res.ok) {
-      console.error("Erro na resposta da API:", res);
-      alert("Erro ao obter previsão via CSV. Verifique o backend.");
-      return;
-    }
-
-    const data = await res.json();
-    console.log("Resposta da API /teste/prever/csv:", data);
-
-    const out = document.getElementById("result-json");
-    if (out) {
-      out.textContent = JSON.stringify(data, null, 2);
-    }
-
-    const resultSection = document.getElementById("result");
-    if (resultSection) {
-      resultSection.classList.remove("hidden");
-    }
-
-    const isMensal =
-      Array.isArray(data.dados_originais) &&
-      data.dados_originais.length > 0 &&
-      Object.prototype.hasOwnProperty.call(data.dados_originais[0], "mes");
-
-    const thetaWrapper = document.getElementById("chart-theta-wrapper");
-    if (thetaWrapper) {
-      thetaWrapper.style.display = isMensal ? "none" : "";
-    }
-    if (chartTheta) {
-      chartTheta.destroy();
-      chartTheta = null;
-    }
-
-    if (isMensal) {
-      desenharGraficoMensal(data);
-    } else {
-      desenharGrafico(data);
-    }
-  } catch (err) {
-    console.error("Erro ao rodar previsão via CSV:", err);
-    alert("Erro ao fazer a previsão via CSV. Veja o console para mais detalhes.");
   }
 }
 
@@ -646,137 +488,49 @@ function desenharGraficoTheta(data) {
   });
 }
 
-function desenharGraficoMensal(data) {
-  const canvas = document.getElementById("grafico-arima");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-
-  // histórico
-  const mesesHistorico = data.dados_originais.map((p) => p.mes);
-  const valoresHistorico = data.dados_originais.map((p) => p.valor);
-
-  const ultimoValor = valoresHistorico[valoresHistorico.length - 1];
-
-  // previsão
-  const mesesPrev = data.previsao.map((p) => p.mes);
-  const valoresPrev = data.previsao.map((p) => p.valor);
-  const liPrev = data.previsao.map((p) => p.li);
-  const lsPrev = data.previsao.map((p) => p.ls);
-
-  const labels = [...mesesHistorico, ...mesesPrev];
-
-  const histData = [...valoresHistorico];
-
-  const prevData = [
-    ...Array(mesesHistorico.length - 1).fill(null),
-    ultimoValor,
-    ...valoresPrev,
-  ];
-
-  const liData = [
-    ...Array(mesesHistorico.length - 1).fill(null),
-    ultimoValor,
-    ...liPrev,
-  ];
-
-  const lsData = [
-    ...Array(mesesHistorico.length - 1).fill(null),
-    ultimoValor,
-    ...lsPrev,
-  ];
-
-  if (chart) {
-    chart.destroy();
+function exportChartAlignedToCSV(chartInstance, nomeArquivo = "dados_grafico.csv") {
+  if (!chartInstance) {
+    alert("Nenhum gráfico disponível para exportar.");
+    return;
   }
 
-  chart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Histórico",
-          data: histData,
-          borderColor: "rgba(14,165,233,1)",
-          backgroundColor: "rgba(14,165,233,0.25)",
-          tension: 0.25,
-          spanGaps: true,
-          pointRadius: 3,
-        },
-        {
-          label: "Previsão",
-          data: prevData,
-          borderColor: "rgba(250,204,21,1)",
-          backgroundColor: "rgba(250,204,21,0.15)",
-          borderDash: [5, 5],
-          tension: 0.25,
-          spanGaps: true,
-          pointRadius: 3,
-        },
-        {
-          label: "Limite inferior",
-          data: liData,
-          borderColor: "rgba(248,113,113,0.7)",
-          borderDash: [3, 3],
-          pointRadius: 0,
-          tension: 0.25,
-          spanGaps: true,
-        },
-        {
-          label: "Limite superior",
-          data: lsData,
-          borderColor: "rgba(190,242,100,0.7)",
-          borderDash: [3, 3],
-          pointRadius: 0,
-          tension: 0.25,
-          spanGaps: true,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        mode: "index",
-        intersect: false,
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "#000000ff",
-          },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: {
-            color: "#000000ff",
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          labels: {
-            color: "#000000ff",
-          },
-        },
-        title: {
-          display: true,
-          text: `${data.estado_rotulo} • ${data.modelo} (mensal)`,
-          color: "#000000ff",
-        },
-      },
-    },
-  });
+  const labels = chartInstance.data.labels; // eixo X (anos)
+  const datasets = chartInstance.data.datasets; // Histórico, Previsão, Limites
+
+  // Cabeçalho
+  const csvHeader = ["Ano", ...datasets.map(ds => ds.label)];
+  let csv = csvHeader.join(",") + "\n";
+
+  // Cada linha representa um ano
+  for (let i = 0; i < labels.length; i++) {
+    const row = [labels[i]];
+    datasets.forEach(ds => {
+      // Se for null ou undefined, deixa vazio
+      row.push(ds.data[i] != null ? ds.data[i] : "");
+    });
+    csv += row.join(",") + "\n";
+  }
+
+  // Download do CSV
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nomeArquivo;
+  a.click();
+  URL.revokeObjectURL(url);
 }
+
+// Botão exportar ARIMA
+document.getElementById("btn-export-arima").addEventListener("click", () => {
+  exportChartAlignedToCSV(chart, "previsao_arima.csv");
+});
+
+// Botão exportar Theta
+document.getElementById("btn-export-theta").addEventListener("click", () => {
+  exportChartAlignedToCSV(chartTheta, "previsao_theta.csv");
+});
 
 document
   .getElementById("btn-prever")
   .addEventListener("click", rodarPrevisao);
-
-document
-  .getElementById("btn-mensal")
-  .addEventListener("click", rodarPrevisaoMensal);
-
-document
-  .getElementById("btn-teste-csv")
-  .addEventListener("click", rodarPrevisaoCsv);

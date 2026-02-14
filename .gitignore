@@ -1,57 +1,10 @@
-# --------------------
-# Rust (Cargo)
-# --------------------
-/target/
-**/*.rs.bk
-Cargo.lock
-# (se for binário/aplicação, você pode versionar Cargo.lock removendo a linha acima)
-
-# --------------------
-# Python
-# --------------------
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
-*.egg-info/
-dist/
-build/
-.eggs/
-.venv/
+# Ignorar a pasta do ambiente virtual (venv)
 venv/
-ENV/
-.env
-pip-wheel-metadata/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-coverage.xml
-htmlcov/
-.ipynb_checkpoints/
-.pytype/
-.pyre/
 
-# IDE / ferramentas comuns
-.vscode/
-.idea/
+# Ignorar pastas de cache do Python
+__pycache__/
 
-# --------------------
-# R
-# --------------------
-.Rhistory
-.RData
-.Ruserdata
-.Rproj.user/
-.Rproj
-.Rcheck/
-.Rcache/
-.Rtmp/
-renv/library/
-packrat/lib*/
-packrat/src*/
+# Ignorar arquivos de log
+*.log
 
-# Se usar Quarto / R Markdown
-*_files/
-*_cache/
+.python-version
