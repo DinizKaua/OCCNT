@@ -10,7 +10,7 @@
 #   - auto  : decide pelo arquivo (mensal → mensal; anual → anual)
 #
 # Modelos:
-#   - arima (padrão)
+#   - arima (padrão)a
 #   - theta (ThetaForecaster do sktime)
 #
 # Exemplos:
