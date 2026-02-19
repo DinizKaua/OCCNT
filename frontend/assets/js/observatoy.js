@@ -70,6 +70,8 @@ function resetResultado() {
     chartTheta.destroy();
     chartTheta = null;
   }
+
+  esconderBotaoDownload();
 }
 
 function showResultadoJson(data) {
@@ -487,6 +489,7 @@ function desenharGraficoTheta(data) {
       },
     },
   });
+  mostrarBotaoDownload();
 }
 
 function desenharGraficoMensal(data) {
@@ -549,9 +552,20 @@ function desenharGraficoMensal(data) {
       },
     },
   });
+  mostrarBotaoDownload();
 }
-/* ======= EXPORTAÇÃO CSV (DETECTA GRÁFICO ATIVO) ======= */
 
+function mostrarBotaoDownload() {
+  const btn = document.getElementById("btn-download-csv");
+  if (btn) btn.style.display = "inline-block";
+}
+
+function esconderBotaoDownload() {
+  const btn = document.getElementById("btn-download-csv");
+  if (btn) btn.style.display = "none";
+}
+
+/* ======= EXPORTAÇÃO CSV (DETECTA GRÁFICO ATIVO) ======= */
 function exportarCsvModeloSelecionado() {
 
   // Detecta qual gráfico está ativo
