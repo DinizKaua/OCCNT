@@ -7,22 +7,24 @@ class PrevisaoRequest(BaseModel):
     doenca: str
     tipo_dado: str
     estado: str = "21 Maranhão"
+
+    # NOVO: auto/anual/mensal + arima/theta
+    modo: str = "anual"
+    modelo: str = "arima"
+
+    # horizonte
     anos_previsao: int = 3
+    periodos_previsao: int = 12  # útil no mensal
+
     alpha: float = 0.95
+    seasonal: Optional[bool] = None  # no mensal
 
-class PontoSerie(BaseModel):
-    ano: int
-    valor: float
-
-class PontoPrevisao(BaseModel):
-    ano: int
-    valor: float
-    li: float
-    ls: float
 
 class PrevisaoResponse(BaseModel):
+    # deixa flexível para anual (ano) e mensal (mes)
     frequencia_origem: str
+    frequencia_saida: Optional[str] = None
     estado_rotulo: str
-    dados_originais: List[PontoSerie]
-    previsao: List[PontoPrevisao]
+    dados_originais: List[Dict[str, Any]]
+    previsao: List[Dict[str, Any]]
     modelo: str

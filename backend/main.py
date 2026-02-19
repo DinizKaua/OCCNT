@@ -2,16 +2,17 @@
 import json
 import os
 import traceback
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict
 
+import pandas as pd
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
 from models import PrevisaoRequest, PrevisaoResponse
-from arima.ccnt2 import gerar_series_anuais
-from arima.theta import gerar_series_anuais as gerar_series_anuais_theta
+from arima import ccnt3
 from teste import router as teste_router
 
-app = FastAPI(title="API ARIMA Doenças")
+app = FastAPI(title="API ARIMA/THETA Doenças")
 
 app.add_middleware(
     CORSMiddleware,
@@ -50,6 +51,14 @@ CATEGORIAS: Dict[str, Dict] = {
 }
 
 
+def _modo_auto_por_csv(caminho_csv: str) -> str:
+    fmt, freq, enc, _ = ccnt3._detect_format_and_freq(caminho_csv)
+    if fmt == "tidy":
+        df = pd.read_csv(caminho_csv, encoding=enc, sep=";", dtype=str)
+        freq = ccnt3._detectar_freq_tidy(df)
+    return "mensal" if freq == "mensal" else "anual"
+
+
 @app.get("/categorias")
 def listar_categorias():
     return [
@@ -83,38 +92,53 @@ def prever(req: PrevisaoRequest):
 
     cat = CATEGORIAS[req.categoria]
     if req.doenca not in cat["doencas"]:
-        raise HTTPException(
-            status_code=404,
-            detail="Doença não encontrada na categoria",
-        )
+        raise HTTPException(status_code=404, detail="Doença não encontrada na categoria")
 
     doenca = cat["doencas"][req.doenca]
     if req.tipo_dado not in doenca["tipos_dado"]:
-        raise HTTPException(
-            status_code=404,
-            detail="Tipo de dado não encontrado para essa doença",
-        )
+        raise HTTPException(status_code=404, detail="Tipo de dado não encontrado para essa doença")
 
     caminho_csv = doenca["tipos_dado"][req.tipo_dado]
     if not os.path.exists(caminho_csv):
-        raise HTTPException(
-            status_code=500,
-            detail=f"CSV não encontrado no servidor: {caminho_csv}",
-        )
+        raise HTTPException(status_code=500, detail=f"CSV não encontrado no servidor: {caminho_csv}")
+
+    modo = (req.modo or "anual").strip().lower()
+    if modo not in ("auto", "anual", "mensal"):
+        raise HTTPException(status_code=400, detail="modo deve ser auto/anual/mensal.")
+
+    modelo = (req.modelo or "arima").strip().lower()
+    if modelo not in ("arima", "theta"):
+        raise HTTPException(status_code=400, detail="modelo deve ser arima/theta.")
 
     try:
-        resultado = gerar_series_anuais(
-            caminho_csv=caminho_csv,
-            estado=req.estado,
-            anos_previsao=req.anos_previsao,
-            alpha=req.alpha,
-        )
-        return resultado
-    except Exception as e:
-        # isso vai aparecer no terminal
-        traceback.print_exc()
+        if modo == "auto":
+            modo_final = _modo_auto_por_csv(caminho_csv)
+        else:
+            modo_final = modo
 
-        # isso vai aparecer no navegador
+        if modo_final == "mensal":
+            seasonal = True if req.seasonal is None else bool(req.seasonal)
+            resultado = ccnt3.gerar_series_mensais(
+                caminho_csv,
+                req.estado,
+                periodos_previsao=int(req.periodos_previsao),
+                alpha=float(req.alpha),
+                seasonal=seasonal,
+                modelo=modelo,
+            )
+        else:
+            resultado = ccnt3.gerar_series_anuais(
+                caminho_csv,
+                req.estado,
+                anos_previsao=int(req.anos_previsao),
+                alpha=float(req.alpha),
+                modelo=modelo,
+            )
+
+        return resultado
+
+    except Exception as e:
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Erro ao gerar previsão: {type(e).__name__}: {repr(e)}",
@@ -123,51 +147,14 @@ def prever(req: PrevisaoRequest):
 
 @app.post("/prever/theta", response_model=PrevisaoResponse)
 def prever_theta(req: PrevisaoRequest):
-    if req.categoria not in CATEGORIAS:
-        raise HTTPException(status_code=404, detail="Categoria não encontrada")
-
-    cat = CATEGORIAS[req.categoria]
-    if req.doenca not in cat["doencas"]:
-        raise HTTPException(
-            status_code=404,
-            detail="Doença não encontrada na categoria",
-        )
-
-    doenca = cat["doencas"][req.doenca]
-    if req.tipo_dado not in doenca["tipos_dado"]:
-        raise HTTPException(
-            status_code=404,
-            detail="Tipo de dado não encontrado para essa doença",
-        )
-
-    caminho_csv = doenca["tipos_dado"][req.tipo_dado]
-    if not os.path.exists(caminho_csv):
-        raise HTTPException(
-            status_code=500,
-            detail=f"CSV não encontrado no servidor: {caminho_csv}",
-        )
-
-    try:
-        resultado = gerar_series_anuais_theta(
-            caminho_csv=caminho_csv,
-            estado=req.estado,
-            anos_previsao=req.anos_previsao,
-            alpha=req.alpha,
-        )
-        return resultado
-    except Exception as e:
-        # isso vai aparecer no terminal
-        traceback.print_exc()
-
-        # isso vai aparecer no navegador
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao gerar previsão (Theta): {type(e).__name__}: {repr(e)}",
-        )
+    # compat: mantém rota antiga, mas força modelo=theta
+    req.modelo = "theta"
+    return prever(req)
 
 
 @app.get("/prever/mensal")
 def prever_mensal():
+    # compat: mantém rota antiga de JSON salvo
     if not os.path.exists(OUT_MENSAL_PATH):
         raise HTTPException(
             status_code=404,

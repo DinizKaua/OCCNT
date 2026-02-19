@@ -45,6 +45,13 @@ def _parse_seasonal(value: Optional[str]) -> Optional[bool]:
     raise HTTPException(status_code=400, detail="seasonal deve ser true/false.")
 
 
+def _parse_modelo(value: Optional[str]) -> str:
+    v = (value or "arima").strip().lower()
+    if v not in ("arima", "theta"):
+        raise HTTPException(status_code=400, detail="modelo deve ser arima/theta.")
+    return v
+
+
 def _detectar_modo_auto(csv_path: str, enc: str, fmt: str, freq: str) -> str:
     if fmt == "tidy":
         df = pd.read_csv(csv_path, encoding=enc, sep=";", dtype=str)
@@ -77,6 +84,7 @@ async def prever_csv(
     file: UploadFile = File(...),
     estado: str = Form("21 Maranhão"),
     modo: str = Form("auto"),
+    modelo: str = Form("arima"),  # <-- NOVO: arima|theta
     anos_previsao: int = Form(3),
     periodos_previsao: int = Form(12),
     alpha: float = Form(0.95),
@@ -94,7 +102,10 @@ async def prever_csv(
         tmp_path = tmp.name
 
     try:
+        modelo_final = _parse_modelo(modelo)
+
         fmt, freq, enc, _ = ccnt3._detect_format_and_freq(tmp_path)
+
         modo_in = modo.strip().lower()
         if modo_in not in ("auto", "anual", "mensal"):
             raise HTTPException(status_code=400, detail="modo deve ser auto/anual/mensal.")
@@ -105,6 +116,7 @@ async def prever_csv(
             modo_final = modo_in
 
         seasonal_bool = _parse_seasonal(seasonal)
+
         if modo_final == "mensal":
             payload = ccnt3.gerar_series_mensais(
                 tmp_path,
@@ -112,6 +124,7 @@ async def prever_csv(
                 periodos_previsao=int(periodos_previsao),
                 alpha=float(alpha),
                 seasonal=True if seasonal_bool is None else seasonal_bool,
+                modelo=modelo_final,  # <-- NOVO
             )
         else:
             payload = ccnt3.gerar_series_anuais(
@@ -119,8 +132,18 @@ async def prever_csv(
                 estado,
                 anos_previsao=int(anos_previsao),
                 alpha=float(alpha),
+                modelo=modelo_final,  # <-- NOVO
             )
+
         return payload
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao gerar previsão: {type(e).__name__}: {repr(e)}",
+        )
     finally:
         try:
             os.remove(tmp_path)

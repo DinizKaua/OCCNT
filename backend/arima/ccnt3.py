@@ -1,17 +1,20 @@
 # backend/arima/ccnt3.py
-# Gera séries (histórico + previsão) via ARIMA a partir de CSV do TABNET.
+# Gera séries (histórico + previsão) via ARIMA ou THETA a partir de CSV do TABNET.
 # Suporta 2 formatos de entrada:
 #   (A) TABNET "wide": coluna "Unidade da Federação" + colunas de período (AAAA ou AAAA/Mes)
 #   (B) CSV "longo/tidy": colunas como sistema; uf_sigla; uf_codigo; uf_nome; granularidade; periodo; valor
 #
-# Modos:
+# Modos (frequência de saída):
 #   - anual  (padrão): saída anual. Se a origem for mensal, agrega por ano.
 #   - mensal: saída mensal (exige origem mensal).
 #   - auto  : decide pelo arquivo (mensal → mensal; anual → anual)
 #
+# Modelos:
+#   - arima (padrão)
+#   - theta (ThetaForecaster do sktime)
+#
 # Exemplos:
-#   python ccnt3.py --csv dados_tabnet_anual.csv  --estado "21" --modo anual  --anos-prev 3  --saida out.json --pretty
-#   python ccnt3.py --csv dados_limpos_mensal.csv --estado "MA" --modo mensal --periodos-prev 12 --saida out_m.json --pretty
+#   python ccnt3.py --csv dados_limpos_mensal.csv --estado "21" --modo mensal --modelo theta --periodos-prev 12 --alpha 0.95 --saida out.json --pretty
 
 from __future__ import annotations
 
@@ -102,8 +105,7 @@ def _detect_format_and_freq(csv_path: str) -> Tuple[str, str, str, Optional[int]
     lines, enc = _read_lines(csv_path)
     hidx = _tabnet_header_idx(lines)
     if hidx is not None:
-        header_cells = lines[hidx].split(";")
-        header_cells = _normalizar_meses(header_cells)
+        header_cells = _normalizar_meses(lines[hidx].split(";"))
         freq = _detectar_freq_por_header(header_cells)
         return "tabnet", freq, enc, hidx
 
@@ -281,12 +283,121 @@ def _fit_arima_log1p(y: np.ndarray, seasonal: bool, m: int) -> Any:
     )
 
 
+def _arima_forecast_log(
+    y_log: np.ndarray,
+    n_periods: int,
+    alpha: float,
+    seasonal: bool,
+    m: int,
+) -> Tuple[np.ndarray, np.ndarray]:
+    modelo = _fit_arima_log1p(y_log, seasonal=seasonal, m=m)
+    fc_log, ci_log = modelo.predict(
+        n_periods=int(n_periods),
+        return_conf_int=True,
+        alpha=1 - alpha,
+    )
+    return np.asarray(fc_log), np.asarray(ci_log)
+
+
+# --------------------------- THETA (sktime) ---------------------------
+
+_Z_TABLE = {
+    0.80: 1.2816,
+    0.85: 1.4395,
+    0.90: 1.6449,
+    0.95: 1.96,
+    0.97: 2.1701,
+    0.98: 2.3263,
+    0.99: 2.5758,
+}
+
+
+def _z_for_alpha(alpha: float) -> float:
+    keys = sorted(_Z_TABLE.keys())
+    best = min(keys, key=lambda k: abs(k - alpha))
+    return _Z_TABLE[best]
+
+
+def _theta_forecast_log(
+    ts_log: pd.Series,
+    n_periods: int,
+    alpha: float,
+    sp: int,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Retorna (forecast_log, conf_int_log[n,2]) em escala log."""
+    try:
+        from sktime.forecasting.base import ForecastingHorizon
+        from sktime.forecasting.theta import ThetaForecaster
+    except Exception as e:
+        raise RuntimeError("Para usar THETA, instale: pip install sktime") from e
+
+    fh = ForecastingHorizon(np.arange(1, int(n_periods) + 1), is_relative=True)
+    forecaster = ThetaForecaster(sp=int(sp))
+    forecaster.fit(ts_log)
+
+    y_pred_log = forecaster.predict(fh)
+
+    # Intervalo nativo (quando disponível)
+    try:
+        pred_int = forecaster.predict_interval(fh, coverage=[alpha])
+        cols = list(pred_int.columns)
+
+        lower_col = None
+        upper_col = None
+        for c in cols:
+            if isinstance(c, tuple):
+                if "lower" in c and lower_col is None:
+                    lower_col = c
+                if "upper" in c and upper_col is None:
+                    upper_col = c
+            else:
+                cs = str(c).lower()
+                if "lower" in cs and lower_col is None:
+                    lower_col = c
+                if "upper" in cs and upper_col is None:
+                    upper_col = c
+
+        if lower_col is None or upper_col is None:
+            raise RuntimeError(f"Não identifiquei lower/upper em pred_int.columns={pred_int.columns}")
+
+        fc_log = np.asarray(y_pred_log)
+        lower = np.asarray(pred_int[lower_col])
+        upper = np.asarray(pred_int[upper_col])
+        ci_log = np.column_stack([lower, upper])
+        return fc_log, ci_log
+
+    except Exception:
+        # Fallback simples com sigma dos resíduos em log
+        try:
+            y_in = forecaster.predict_in_sample()
+            y_in = y_in.reindex(ts_log.index)
+            resid = (ts_log - y_in).to_numpy()
+            sigma = float(np.nanstd(resid)) if np.isfinite(resid).any() else float(np.nanstd(np.diff(ts_log.to_numpy())))
+        except Exception:
+            sigma = float(np.nanstd(np.diff(ts_log.to_numpy()))) if len(ts_log) > 2 else 0.0
+
+        z = _z_for_alpha(alpha)
+        fc_log = np.asarray(y_pred_log)
+        lower = fc_log - z * sigma
+        upper = fc_log + z * sigma
+        ci_log = np.column_stack([lower, upper])
+        return fc_log, ci_log
+
+
+# --------------------------- Forecast API ---------------------------
+
 def gerar_series_anuais(
     caminho_csv: str,
     estado: str,
     anos_previsao: int = 3,
     alpha: float = 0.95,
+    modelo: str = "arima",
 ) -> Dict[str, Any]:
+    """Saída anual. Se origem mensal, agrega por ano. Modelo: arima|theta."""
+    modelo = (modelo or "arima").strip().lower()
+    if modelo not in ("arima", "theta"):
+        raise ValueError("modelo inválido. Use: arima | theta")
+
     fmt, freq, enc, hidx = _detect_format_and_freq(caminho_csv)
 
     if fmt == "tabnet":
@@ -303,14 +414,16 @@ def gerar_series_anuais(
         serie = _serie_from_tidy(dff, freq=freq_origem)
         serie_ano = _series_anuais(serie) if freq_origem == "mensal" else serie
 
-    y = np.log1p(serie_ano.values)
-    modelo = _fit_arima_log1p(y, seasonal=False, m=1)
+    ts_log = np.log1p(serie_ano.values)
 
-    fc_log, ci_log = modelo.predict(
-        n_periods=int(anos_previsao),
-        return_conf_int=True,
-        alpha=1 - alpha,
-    )
+    if modelo == "arima":
+        fc_log, ci_log = _arima_forecast_log(ts_log, anos_previsao, alpha, seasonal=False, m=1)
+        modelo_nome = "ARIMA"
+    else:
+        ts_log_s = pd.Series(ts_log, index=serie_ano.index)
+        fc_log, ci_log = _theta_forecast_log(ts_log_s, anos_previsao, alpha, sp=1)
+        modelo_nome = "ThetaForecaster (sktime)"
+
     fc = np.clip(np.expm1(np.asarray(fc_log)), 0, None)
     ci = np.clip(np.expm1(np.asarray(ci_log)), 0, None)
 
@@ -329,7 +442,7 @@ def gerar_series_anuais(
         "estado_rotulo": estado_rotulo,
         "dados_originais": dados_orig,
         "previsao": prev,
-        "modelo": "ARIMA",
+        "modelo": modelo_nome,
     }
 
 
@@ -339,7 +452,13 @@ def gerar_series_mensais(
     periodos_previsao: int = 12,
     alpha: float = 0.95,
     seasonal: bool = True,
+    modelo: str = "arima",
 ) -> Dict[str, Any]:
+    """Saída mensal (origem precisa ser mensal). Modelo: arima|theta."""
+    modelo = (modelo or "arima").strip().lower()
+    if modelo not in ("arima", "theta"):
+        raise ValueError("modelo inválido. Use: arima | theta")
+
     fmt, freq, enc, hidx = _detect_format_and_freq(caminho_csv)
 
     if fmt == "tabnet":
@@ -360,14 +479,17 @@ def gerar_series_mensais(
     use_seasonal = bool(seasonal) and len(serie_m) >= 24
     m = 12 if use_seasonal else 1
 
-    y = np.log1p(serie_m.values)
-    modelo = _fit_arima_log1p(y, seasonal=use_seasonal, m=m)
+    ts_log = np.log1p(serie_m.values)
 
-    fc_log, ci_log = modelo.predict(
-        n_periods=int(periodos_previsao),
-        return_conf_int=True,
-        alpha=1 - alpha,
-    )
+    if modelo == "arima":
+        fc_log, ci_log = _arima_forecast_log(ts_log, periodos_previsao, alpha, seasonal=use_seasonal, m=m)
+        modelo_nome = "ARIMA"
+    else:
+        # sktime ThetaForecaster chokes on MonthBegin as Period freq; use PeriodIndex explicitly.
+        ts_log_s = pd.Series(ts_log, index=pd.PeriodIndex(serie_m.index, freq="M"))
+        fc_log, ci_log = _theta_forecast_log(ts_log_s, periodos_previsao, alpha, sp=m)
+        modelo_nome = "ThetaForecaster (sktime)"
+
     fc = np.clip(np.expm1(np.asarray(fc_log)), 0, None)
     ci = np.clip(np.expm1(np.asarray(ci_log)), 0, None)
 
@@ -386,7 +508,7 @@ def gerar_series_mensais(
         "estado_rotulo": estado_rotulo,
         "dados_originais": dados_orig,
         "previsao": prev,
-        "modelo": "ARIMA",
+        "modelo": modelo_nome,
         "seasonal": bool(use_seasonal),
         "m": int(m),
     }
@@ -395,14 +517,15 @@ def gerar_series_mensais(
 # --------------------------- CLI ---------------------------
 
 def _main() -> None:
-    p = argparse.ArgumentParser(description="Gera JSON (histórico + previsão) via ARIMA")
+    p = argparse.ArgumentParser(description="Gera JSON (histórico + previsão) via ARIMA ou THETA")
     p.add_argument("--csv", required=True)
     p.add_argument("--estado", required=True, help="ex.: '21 Maranhão' | 'Maranhão' | '21' | 'MA'")
     p.add_argument("--alpha", type=float, default=0.95)
 
     p.add_argument("--modo", choices=["anual", "mensal", "auto"], default="anual")
+    p.add_argument("--modelo", choices=["arima", "theta"], default="arima")
 
-    p.add_argument("--anos-prev", type=int, default=None, help="(compat) horizonte ANUAL em anos")
+    p.add_argument("--anos-prev", type=int, default=None, help="horizonte ANUAL em anos")
     p.add_argument("--periodos-prev", type=int, default=None, help="horizonte em períodos (meses no modo mensal)")
 
     p.add_argument("--seasonal", action="store_true", help="força sazonalidade no mensal (m=12)")
@@ -439,6 +562,7 @@ def _main() -> None:
             periodos_previsao=int(n_prev),
             alpha=args.alpha,
             seasonal=seasonal,
+            modelo=args.modelo,
         )
     else:
         payload = gerar_series_anuais(
@@ -446,6 +570,7 @@ def _main() -> None:
             args.estado,
             anos_previsao=int(n_prev),
             alpha=args.alpha,
+            modelo=args.modelo,
         )
 
     if args.saida == "-":

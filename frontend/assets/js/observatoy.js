@@ -1,63 +1,167 @@
-const API_BASE = "http://localhost:8000";
+// Usa o mesmo hostname do frontend (127.0.0.1 ou localhost), porta 8000
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 let categoriaSelecionada = null;
 let doencaSelecionada = null;
 let tipoSelecionado = null;
-let chart = null;       // gráfico ARIMA
-let chartTheta = null;  // gráfico Theta
+let chart = null;       // gráfico principal (ARIMA ou mensal)
+let chartTheta = null;  // gráfico Theta (anual)
+
+const $ = (id) => document.getElementById(id);
+
+function getModelo() {
+  const el = $("modelo");
+  return el ? (el.value || "arima").toLowerCase() : "arima";
+}
+
+function getModo() {
+  const el = $("modo");
+  return el ? (el.value || "auto").toLowerCase() : "auto";
+}
+
+function isMensalPayload(data) {
+  return (
+    data &&
+    Array.isArray(data.dados_originais) &&
+    data.dados_originais.length > 0 &&
+    Object.prototype.hasOwnProperty.call(data.dados_originais[0], "mes")
+  );
+}
+
+function applyModoUi() {
+  const modo = getModo();
+  const lblAnos = $("label-anos");
+  const lblPeriodos = $("label-periodos");
+  const lblSeasonal = $("label-seasonal");
+
+  // auto: mostra tudo (usuário pode preencher)
+  if (modo === "auto") {
+    if (lblAnos) lblAnos.style.display = "";
+    if (lblPeriodos) lblPeriodos.style.display = "";
+    if (lblSeasonal) lblSeasonal.style.display = "";
+    return;
+  }
+
+  if (modo === "anual") {
+    if (lblAnos) lblAnos.style.display = "";
+    if (lblPeriodos) lblPeriodos.style.display = "none";
+    if (lblSeasonal) lblSeasonal.style.display = "none";
+    return;
+  }
+
+  // mensal
+  if (lblAnos) lblAnos.style.display = "none";
+  if (lblPeriodos) lblPeriodos.style.display = "";
+  if (lblSeasonal) lblSeasonal.style.display = "";
+}
+
+function resetResultado() {
+  const resultSection = $("result");
+  if (resultSection) resultSection.classList.add("hidden");
+
+  const resultJson = $("result-json");
+  if (resultJson) resultJson.textContent = "";
+
+  if (chart) {
+    chart.destroy();
+    chart = null;
+  }
+  if (chartTheta) {
+    chartTheta.destroy();
+    chartTheta = null;
+  }
+}
+
+function showResultadoJson(data) {
+  const out = $("result-json");
+  if (out) out.textContent = JSON.stringify(data, null, 2);
+
+  const resultSection = $("result");
+  if (resultSection) resultSection.classList.remove("hidden");
+}
+
+function renderResultado(data, modeloEscolhido) {
+  const thetaWrapper = $("chart-theta-wrapper");
+  const arimaWrapper = $("chart-arima-wrapper");
+
+  const mensal = isMensalPayload(data);
+
+  // mensal: sempre desenha no canvas principal (grafico-arima)
+  if (mensal) {
+    if (arimaWrapper) arimaWrapper.style.display = "";
+    if (thetaWrapper) thetaWrapper.style.display = "none";
+    if (chartTheta) {
+      chartTheta.destroy();
+      chartTheta = null;
+    }
+    desenharGraficoMensal(data);
+    return;
+  }
+
+  // anual: escolhe canvas conforme modelo
+  if (modeloEscolhido === "theta") {
+    if (arimaWrapper) arimaWrapper.style.display = "none";
+    if (thetaWrapper) thetaWrapper.style.display = "";
+    if (chart) {
+      chart.destroy();
+      chart = null;
+    }
+    desenharGraficoTheta(data);
+  } else {
+    if (arimaWrapper) arimaWrapper.style.display = "";
+    if (thetaWrapper) thetaWrapper.style.display = "none";
+    if (chartTheta) {
+      chartTheta.destroy();
+      chartTheta = null;
+    }
+    desenharGrafico(data);
+  }
+}
 
 document.addEventListener("DOMContentLoaded", async function () {
-  // Lê o parâmetro da URL (ex: observatory.html?disease=sepse&name=Sepse)
   const urlParams = new URLSearchParams(window.location.search);
   const nomeCategoriaSlug = urlParams.get("disease");
   const nomeExibido = urlParams.get("name");
   const modoTeste = urlParams.get("teste") === "1";
 
-  const tituloPagina = document.getElementById("categoryTitle");
+  const tituloPagina = $("categoryTitle");
   if (tituloPagina) {
-    if (modoTeste) {
-      tituloPagina.textContent = "Teste";
-    } else if (nomeExibido) {
-      tituloPagina.textContent = nomeExibido;
-    }
+    if (modoTeste) tituloPagina.textContent = "Teste";
+    else if (nomeExibido) tituloPagina.textContent = nomeExibido;
   }
 
+  const modoSelect = $("modo");
+  if (modoSelect) {
+    modoSelect.addEventListener("change", applyModoUi);
+  }
+  applyModoUi();
+
   if (modoTeste) {
-    const analyzedSection = document.getElementById("analyzed_data");
-    if (analyzedSection) {
-      analyzedSection.classList.add("hidden");
-    }
-    const dataTypeSection = document.getElementById("data_type");
-    if (dataTypeSection) {
-      dataTypeSection.classList.add("hidden");
-    }
-    const btnPrever = document.getElementById("btn-prever");
-    if (btnPrever) {
-      btnPrever.style.display = "none";
-    }
-    const btnMensal = document.getElementById("btn-mensal");
-    if (btnMensal) {
-      btnMensal.style.display = "none";
-    }
-    const paramsSection = document.getElementById("parameters");
-    if (paramsSection) {
-      paramsSection.classList.remove("hidden");
-    }
+    const analyzedSection = $("analyzed_data");
+    if (analyzedSection) analyzedSection.classList.add("hidden");
+
+    const dataTypeSection = $("data_type");
+    if (dataTypeSection) dataTypeSection.classList.add("hidden");
+
+    const btnPrever = $("btn-prever");
+    if (btnPrever) btnPrever.style.display = "none";
+
+    const btnMensal = $("btn-mensal");
+    if (btnMensal) btnMensal.style.display = "none";
+
+    const paramsSection = $("parameters");
+    if (paramsSection) paramsSection.classList.remove("hidden");
     return;
   }
 
   if (!nomeCategoriaSlug) {
-    console.error("Nenhuma categoria especificada na URL");
     alert("Categoria não especificada.");
     return;
   }
 
   try {
-    // Verifica se a categoria existe na API
     const res = await fetch(`${API_BASE}/categorias`);
-    if (!res.ok) {
-      throw new Error("Falha ao carregar categorias");
-    }
+    if (!res.ok) throw new Error("Falha ao carregar categorias");
     const categorias = await res.json();
 
     const categoriaValida = categorias.find(
@@ -71,27 +175,17 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     categoriaSelecionada = categoriaValida.nome;
 
-    // Atualiza título e mostra seção de doenças
-    const analyzedSection = document.getElementById("analyzed_data");
-    if (analyzedSection) {
-      analyzedSection.classList.remove("hidden");
-    }
+    const analyzedSection = $("analyzed_data");
+    if (analyzedSection) analyzedSection.classList.remove("hidden");
 
-    const dataTitle = document.getElementById("data_title");
-    if (dataTitle) {
-      dataTitle.textContent = `Opções: ${nomeExibido || categoriaValida.nome}`;
-    }
+    const dataTitle = $("data_title");
+    if (dataTitle) dataTitle.textContent = `Opções: ${nomeExibido || categoriaValida.nome}`;
 
-    // Busca doenças dessa categoria
-    const resDoencas = await fetch(
-      `${API_BASE}/categorias/${categoriaValida.nome}/doencas`
-    );
-    if (!resDoencas.ok) {
-      throw new Error("Falha ao carregar doenças");
-    }
+    const resDoencas = await fetch(`${API_BASE}/categorias/${categoriaValida.nome}/doencas`);
+    if (!resDoencas.ok) throw new Error("Falha ao carregar doenças");
     const doencas = await resDoencas.json();
 
-    const container = document.getElementById("data_list");
+    const container = $("data_list");
     if (!container) return;
     container.innerHTML = "";
 
@@ -112,38 +206,15 @@ function selecionarDoenca(nome, tipos) {
   doencaSelecionada = nome;
   tipoSelecionado = null;
 
-  // limpar resultados anteriores
-  const resultSection = document.getElementById("result");
-  if (resultSection) {
-    resultSection.classList.add("hidden");
-  }
-  const resultJson = document.getElementById("result-json");
-  if (resultJson) {
-    resultJson.textContent = "";
-  }
+  resetResultado();
 
-  // resetar gráficos se já existirem
-  if (chart) {
-    chart.destroy();
-    chart = null;
-  }
-  if (chartTheta) {
-    chartTheta.destroy();
-    chartTheta = null;
-  }
+  const dataTypeSection = $("data_type");
+  if (dataTypeSection) dataTypeSection.classList.remove("hidden");
 
-  // mostrar opções de tipo de dado
-  const dataTypeSection = document.getElementById("data_type");
-  if (dataTypeSection) {
-    dataTypeSection.classList.remove("hidden");
-  }
+  const typeTitle = $("type_title");
+  if (typeTitle) typeTitle.textContent = `Tipos de dado para ${nome}`;
 
-  const typeTitle = document.getElementById("type_title");
-  if (typeTitle) {
-    typeTitle.textContent = `Tipos de dado para ${nome}`;
-  }
-
-  const container = document.getElementById("type_list");
+  const container = $("type_list");
   if (!container) return;
   container.innerHTML = "";
 
@@ -157,32 +228,11 @@ function selecionarDoenca(nome, tipos) {
 }
 
 function selecionarTipo(t) {
-  // limpar resultado da previsão anterior
-  const resultSection = document.getElementById("result");
-  if (resultSection) {
-    resultSection.classList.add("hidden");
-  }
-  const resultJson = document.getElementById("result-json");
-  if (resultJson) {
-    resultJson.textContent = "";
-  }
-
-  // resetar gráficos
-  if (chart) {
-    chart.destroy();
-    chart = null;
-  }
-  if (chartTheta) {
-    chartTheta.destroy();
-    chartTheta = null;
-  }
-
+  resetResultado();
   tipoSelecionado = t;
 
-  const paramsSection = document.getElementById("parameters");
-  if (paramsSection) {
-    paramsSection.classList.remove("hidden");
-  }
+  const paramsSection = $("parameters");
+  if (paramsSection) paramsSection.classList.remove("hidden");
 }
 
 async function rodarPrevisao() {
@@ -191,76 +241,53 @@ async function rodarPrevisao() {
     return;
   }
 
-  const estadoInput = document.getElementById("estado");
-  const anosInput = document.getElementById("anos-previsao");
+  const estado = ($("estado") && $("estado").value) ? $("estado").value : "21 Maranhão";
+  const anos = parseInt(($("anos-previsao") && $("anos-previsao").value) ? $("anos-previsao").value : "3", 10);
+  const periodos = parseInt(($("periodos-previsao") && $("periodos-previsao").value) ? $("periodos-previsao").value : "12", 10);
+  const alpha = parseFloat(($("alpha") && $("alpha").value) ? $("alpha").value : "0.95");
+  const seasonal = !!($("seasonal") && $("seasonal").checked);
 
-  const estado =
-    (estadoInput && estadoInput.value) ? estadoInput.value : "21 Maranhão";
-  const anos = parseInt(
-    (anosInput && anosInput.value) ? anosInput.value : "3",
-    10
-  );
+  const modelo = getModelo();
+  const modo = getModo();
 
   const payload = {
     categoria: categoriaSelecionada,
     doenca: doencaSelecionada,
     tipo_dado: tipoSelecionado,
     estado: estado,
+
+    // novos:
+    modelo: modelo,       // arima|theta
+    modo: modo,           // auto|anual|mensal
     anos_previsao: anos,
-    alpha: 0.95,
+    periodos_previsao: periodos,
+    alpha: alpha,
+    seasonal: seasonal,
   };
 
   try {
-    const thetaWrapper = document.getElementById("chart-theta-wrapper");
-    if (thetaWrapper) {
-      thetaWrapper.style.display = "";
-    }
+    resetResultado();
 
-    const [resArima, resTheta] = await Promise.all([
-      fetch(`${API_BASE}/prever`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }),
-      fetch(`${API_BASE}/prever/theta`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }),
-    ]);
+    const res = await fetch(`${API_BASE}/prever`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-    if (!resArima.ok || !resTheta.ok) {
-      console.error("Erro nas respostas da API:", resArima, resTheta);
-      alert("Erro ao obter previsões. Verifique o backend.");
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const j = await res.json();
+        detail = j && j.detail ? `\n\n${j.detail}` : "";
+      } catch (_) {}
+      alert(`Erro ao obter previsão. Verifique o backend.${detail}`);
       return;
     }
 
-    const dataArima = await resArima.json();
-    const dataTheta = await resTheta.json();
+    const data = await res.json();
+    showResultadoJson(data);
+    renderResultado(data, modelo);
 
-    console.log("Resposta da API /prever:", dataArima);
-    console.log("Resposta da API /prever/theta:", dataTheta);
-
-    const out = document.getElementById("result-json");
-    if (out) {
-      out.textContent = JSON.stringify(
-        { arima: dataArima, theta: dataTheta },
-        null,
-        2
-      );
-    }
-
-    const resultSection = document.getElementById("result");
-    if (resultSection) {
-      resultSection.classList.remove("hidden");
-    }
-
-    desenharGrafico(dataArima);
-    desenharGraficoTheta(dataTheta);
   } catch (err) {
     console.error("Erro ao rodar previsão:", err);
     alert("Erro ao fazer a previsão. Veja o console para mais detalhes.");
@@ -271,34 +298,15 @@ async function rodarPrevisaoMensal() {
   try {
     const res = await fetch(`${API_BASE}/prever/mensal`);
     if (!res.ok) {
-      console.error("Erro na resposta da API:", res);
       alert("Erro ao obter previsão mensal. Verifique o backend.");
       return;
     }
 
     const data = await res.json();
-    console.log("Resposta da API /prever/mensal:", data);
+    showResultadoJson(data);
 
-    const out = document.getElementById("result-json");
-    if (out) {
-      out.textContent = JSON.stringify(data, null, 2);
-    }
-
-    const resultSection = document.getElementById("result");
-    if (resultSection) {
-      resultSection.classList.remove("hidden");
-    }
-
-    const thetaWrapper = document.getElementById("chart-theta-wrapper");
-    if (thetaWrapper) {
-      thetaWrapper.style.display = "none";
-    }
-    if (chartTheta) {
-      chartTheta.destroy();
-      chartTheta = null;
-    }
-
-    desenharGraficoMensal(data);
+    // esse endpoint é legado: assume mensal
+    renderResultado(data, "arima");
   } catch (err) {
     console.error("Erro ao rodar previsão mensal:", err);
     alert("Erro ao fazer a previsão mensal. Veja o console para mais detalhes.");
@@ -306,103 +314,66 @@ async function rodarPrevisaoMensal() {
 }
 
 async function rodarPrevisaoCsv() {
-  const fileInput = document.getElementById("csv-file");
-  const estadoInput = document.getElementById("estado");
-  const anosInput = document.getElementById("anos-previsao");
-  const periodosInput = document.getElementById("periodos-previsao");
-  const alphaInput = document.getElementById("alpha");
-  const seasonalInput = document.getElementById("seasonal");
-
+  const fileInput = $("csv-file");
   if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
     alert("Selecione um arquivo CSV.");
     return;
   }
 
-  const estado =
-    (estadoInput && estadoInput.value) ? estadoInput.value : "21 Maranhão";
-  const anos = parseInt(
-    (anosInput && anosInput.value) ? anosInput.value : "3",
-    10
-  );
-  const periodos = parseInt(
-    (periodosInput && periodosInput.value) ? periodosInput.value : "12",
-    10
-  );
-  const alpha = parseFloat(
-    (alphaInput && alphaInput.value) ? alphaInput.value : "0.95"
-  );
-  const seasonal = !!(seasonalInput && seasonalInput.checked);
+  const estado = ($("estado") && $("estado").value) ? $("estado").value : "21 Maranhão";
+  const anos = parseInt(($("anos-previsao") && $("anos-previsao").value) ? $("anos-previsao").value : "3", 10);
+  const periodos = parseInt(($("periodos-previsao") && $("periodos-previsao").value) ? $("periodos-previsao").value : "12", 10);
+  const alpha = parseFloat(($("alpha") && $("alpha").value) ? $("alpha").value : "0.95");
+  const seasonal = !!($("seasonal") && $("seasonal").checked);
+
+  const modelo = getModelo(); // arima|theta
+  const modo = getModo();     // auto|anual|mensal
 
   const form = new FormData();
   form.append("file", fileInput.files[0]);
   form.append("estado", estado);
-  form.append("modo", "auto");
+  form.append("modo", modo);
+  form.append("modelo", modelo);
   form.append("anos_previsao", String(anos));
   form.append("periodos_previsao", String(periodos));
   form.append("alpha", String(alpha));
   form.append("seasonal", seasonal ? "true" : "false");
 
   try {
-    const res = await fetch(`${API_BASE}/teste/prever/csv`, {
-      method: "POST",
-      body: form,
-    });
+    resetResultado();
+
+    const res = await fetch(`${API_BASE}/teste/prever/csv`, { method: "POST", body: form });
     if (!res.ok) {
-      console.error("Erro na resposta da API:", res);
-      alert("Erro ao obter previsão via CSV. Verifique o backend.");
+      let detail = "";
+      try {
+        const j = await res.json();
+        detail = j && j.detail ? `\n\n${j.detail}` : "";
+      } catch (_) {}
+      alert(`Erro ao obter previsão via CSV. Verifique o backend.${detail}`);
       return;
     }
 
     const data = await res.json();
-    console.log("Resposta da API /teste/prever/csv:", data);
+    showResultadoJson(data);
+    renderResultado(data, modelo);
 
-    const out = document.getElementById("result-json");
-    if (out) {
-      out.textContent = JSON.stringify(data, null, 2);
-    }
-
-    const resultSection = document.getElementById("result");
-    if (resultSection) {
-      resultSection.classList.remove("hidden");
-    }
-
-    const isMensal =
-      Array.isArray(data.dados_originais) &&
-      data.dados_originais.length > 0 &&
-      Object.prototype.hasOwnProperty.call(data.dados_originais[0], "mes");
-
-    const thetaWrapper = document.getElementById("chart-theta-wrapper");
-    if (thetaWrapper) {
-      thetaWrapper.style.display = isMensal ? "none" : "";
-    }
-    if (chartTheta) {
-      chartTheta.destroy();
-      chartTheta = null;
-    }
-
-    if (isMensal) {
-      desenharGraficoMensal(data);
-    } else {
-      desenharGrafico(data);
-    }
   } catch (err) {
     console.error("Erro ao rodar previsão via CSV:", err);
     alert("Erro ao fazer a previsão via CSV. Veja o console para mais detalhes.");
   }
 }
 
+/* ======= GRÁFICOS (mantidos) ======= */
+
 function desenharGrafico(data) {
   const canvas = document.getElementById("grafico-arima");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
-  // histórico
   const anosHistorico = data.dados_originais.map((p) => p.ano);
   const valoresHistorico = data.dados_originais.map((p) => p.valor);
-
   const ultimoValor = valoresHistorico[valoresHistorico.length - 1];
 
-  // previsão
   const anosPrev = data.previsao.map((p) => p.ano);
   const valoresPrev = data.previsao.map((p) => p.valor);
   const liPrev = data.previsao.map((p) => p.li);
@@ -430,85 +401,27 @@ function desenharGrafico(data) {
     ...lsPrev,
   ];
 
-  if (chart) {
-    chart.destroy();
-  }
+  if (chart) chart.destroy();
 
   chart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: labels,
+      labels,
       datasets: [
-        {
-          label: "Histórico",
-          data: histData,
-          borderColor: "rgba(14,165,233,1)",
-          backgroundColor: "rgba(14,165,233,0.25)",
-          tension: 0.25,
-          spanGaps: true,
-          pointRadius: 3,
-        },
-        {
-          label: "Previsão",
-          data: prevData,
-          borderColor: "rgba(250,204,21,1)",
-          backgroundColor: "rgba(250,204,21,0.15)",
-          borderDash: [5, 5],
-          tension: 0.25,
-          spanGaps: true,
-          pointRadius: 3,
-        },
-        {
-          label: "Limite inferior",
-          data: liData,
-          borderColor: "rgba(248,113,113,0.7)",
-          borderDash: [3, 3],
-          pointRadius: 0,
-          tension: 0.25,
-          spanGaps: true,
-        },
-        {
-          label: "Limite superior",
-          data: lsData,
-          borderColor: "rgba(190,242,100,0.7)",
-          borderDash: [3, 3],
-          pointRadius: 0,
-          tension: 0.25,
-          spanGaps: true,
-        },
+        { label: "Histórico", data: histData, borderColor: "rgba(14,165,233,1)", backgroundColor: "rgba(14,165,233,0.25)", tension: 0.25, spanGaps: true, pointRadius: 3 },
+        { label: "Previsão", data: prevData, borderColor: "rgba(250,204,21,1)", backgroundColor: "rgba(250,204,21,0.15)", borderDash: [5, 5], tension: 0.25, spanGaps: true, pointRadius: 3 },
+        { label: "Limite inferior", data: liData, borderColor: "rgba(248,113,113,0.7)", borderDash: [3, 3], pointRadius: 0, tension: 0.25, spanGaps: true },
+        { label: "Limite superior", data: lsData, borderColor: "rgba(190,242,100,0.7)", borderDash: [3, 3], pointRadius: 0, tension: 0.25, spanGaps: true },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: {
-        mode: "index",
-        intersect: false,
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "#000000ff",
-          },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: {
-            color: "#000000ff",
-          },
-        },
-      },
+      interaction: { mode: "index", intersect: false },
+      scales: { x: { ticks: { color: "#000000ff" } }, y: { beginAtZero: true, ticks: { color: "#000000ff" } } },
       plugins: {
-        legend: {
-          labels: {
-            color: "#000000ff",
-          },
-        },
-        title: {
-          display: true,
-          text: `${data.estado_rotulo} • ${data.modelo}`,
-          color: "#000000ff",
-        },
+        legend: { labels: { color: "#000000ff" } },
+        title: { display: true, text: `${data.estado_rotulo} • ${data.modelo}`, color: "#000000ff" },
       },
     },
   });
@@ -519,13 +432,10 @@ function desenharGraficoTheta(data) {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
-  // histórico
   const anosHistorico = data.dados_originais.map((p) => p.ano);
   const valoresHistorico = data.dados_originais.map((p) => p.valor);
-
   const ultimoValor = valoresHistorico[valoresHistorico.length - 1];
 
-  // previsão
   const anosPrev = data.previsao.map((p) => p.ano);
   const valoresPrev = data.previsao.map((p) => p.valor);
   const liPrev = data.previsao.map((p) => p.li);
@@ -553,85 +463,27 @@ function desenharGraficoTheta(data) {
     ...lsPrev,
   ];
 
-  if (chartTheta) {
-    chartTheta.destroy();
-  }
+  if (chartTheta) chartTheta.destroy();
 
   chartTheta = new Chart(ctx, {
     type: "line",
     data: {
-      labels: labels,
+      labels,
       datasets: [
-        {
-          label: "Histórico",
-          data: histData,
-          borderColor: "rgba(14,165,233,1)",
-          backgroundColor: "rgba(14,165,233,0.25)",
-          tension: 0.25,
-          spanGaps: true,
-          pointRadius: 3,
-        },
-        {
-          label: "Previsão (Theta)",
-          data: prevData,
-          borderColor: "rgba(250,204,21,1)",
-          backgroundColor: "rgba(250,204,21,0.15)",
-          borderDash: [5, 5],
-          tension: 0.25,
-          spanGaps: true,
-          pointRadius: 3,
-        },
-        {
-          label: "Limite inferior (Theta)",
-          data: liData,
-          borderColor: "rgba(248,113,113,0.7)",
-          borderDash: [3, 3],
-          pointRadius: 0,
-          tension: 0.25,
-          spanGaps: true,
-        },
-        {
-          label: "Limite superior (Theta)",
-          data: lsData,
-          borderColor: "rgba(190,242,100,0.7)",
-          borderDash: [3, 3],
-          pointRadius: 0,
-          tension: 0.25,
-          spanGaps: true,
-        },
+        { label: "Histórico", data: histData, borderColor: "rgba(14,165,233,1)", backgroundColor: "rgba(14,165,233,0.25)", tension: 0.25, spanGaps: true, pointRadius: 3 },
+        { label: "Previsão (Theta)", data: prevData, borderColor: "rgba(250,204,21,1)", backgroundColor: "rgba(250,204,21,0.15)", borderDash: [5, 5], tension: 0.25, spanGaps: true, pointRadius: 3 },
+        { label: "Limite inferior (Theta)", data: liData, borderColor: "rgba(248,113,113,0.7)", borderDash: [3, 3], pointRadius: 0, tension: 0.25, spanGaps: true },
+        { label: "Limite superior (Theta)", data: lsData, borderColor: "rgba(190,242,100,0.7)", borderDash: [3, 3], pointRadius: 0, tension: 0.25, spanGaps: true },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: {
-        mode: "index",
-        intersect: false,
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "#000000ff",
-          },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: {
-            color: "#000000ff",
-          },
-        },
-      },
+      interaction: { mode: "index", intersect: false },
+      scales: { x: { ticks: { color: "#000000ff" } }, y: { beginAtZero: true, ticks: { color: "#000000ff" } } },
       plugins: {
-        legend: {
-          labels: {
-            color: "#000000ff",
-          },
-        },
-        title: {
-          display: true,
-          text: `${data.estado_rotulo} • ${data.modelo}`,
-          color: "#000000ff",
-        },
+        legend: { labels: { color: "#000000ff" } },
+        title: { display: true, text: `${data.estado_rotulo} • ${data.modelo}`, color: "#000000ff" },
       },
     },
   });
@@ -642,13 +494,10 @@ function desenharGraficoMensal(data) {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
-  // histórico
   const mesesHistorico = data.dados_originais.map((p) => p.mes);
   const valoresHistorico = data.dados_originais.map((p) => p.valor);
-
   const ultimoValor = valoresHistorico[valoresHistorico.length - 1];
 
-  // previsão
   const mesesPrev = data.previsao.map((p) => p.mes);
   const valoresPrev = data.previsao.map((p) => p.valor);
   const liPrev = data.previsao.map((p) => p.li);
@@ -676,98 +525,38 @@ function desenharGraficoMensal(data) {
     ...lsPrev,
   ];
 
-  if (chart) {
-    chart.destroy();
-  }
+  if (chart) chart.destroy();
 
   chart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: labels,
+      labels,
       datasets: [
-        {
-          label: "Histórico",
-          data: histData,
-          borderColor: "rgba(14,165,233,1)",
-          backgroundColor: "rgba(14,165,233,0.25)",
-          tension: 0.25,
-          spanGaps: true,
-          pointRadius: 3,
-        },
-        {
-          label: "Previsão",
-          data: prevData,
-          borderColor: "rgba(250,204,21,1)",
-          backgroundColor: "rgba(250,204,21,0.15)",
-          borderDash: [5, 5],
-          tension: 0.25,
-          spanGaps: true,
-          pointRadius: 3,
-        },
-        {
-          label: "Limite inferior",
-          data: liData,
-          borderColor: "rgba(248,113,113,0.7)",
-          borderDash: [3, 3],
-          pointRadius: 0,
-          tension: 0.25,
-          spanGaps: true,
-        },
-        {
-          label: "Limite superior",
-          data: lsData,
-          borderColor: "rgba(190,242,100,0.7)",
-          borderDash: [3, 3],
-          pointRadius: 0,
-          tension: 0.25,
-          spanGaps: true,
-        },
+        { label: "Histórico", data: histData, borderColor: "rgba(14,165,233,1)", backgroundColor: "rgba(14,165,233,0.25)", tension: 0.25, spanGaps: true, pointRadius: 3 },
+        { label: "Previsão", data: prevData, borderColor: "rgba(250,204,21,1)", backgroundColor: "rgba(250,204,21,0.15)", borderDash: [5, 5], tension: 0.25, spanGaps: true, pointRadius: 3 },
+        { label: "Limite inferior", data: liData, borderColor: "rgba(248,113,113,0.7)", borderDash: [3, 3], pointRadius: 0, tension: 0.25, spanGaps: true },
+        { label: "Limite superior", data: lsData, borderColor: "rgba(190,242,100,0.7)", borderDash: [3, 3], pointRadius: 0, tension: 0.25, spanGaps: true },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: {
-        mode: "index",
-        intersect: false,
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "#000000ff",
-          },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: {
-            color: "#000000ff",
-          },
-        },
-      },
+      interaction: { mode: "index", intersect: false },
+      scales: { x: { ticks: { color: "#000000ff" } }, y: { beginAtZero: true, ticks: { color: "#000000ff" } } },
       plugins: {
-        legend: {
-          labels: {
-            color: "#000000ff",
-          },
-        },
-        title: {
-          display: true,
-          text: `${data.estado_rotulo} • ${data.modelo} (mensal)`,
-          color: "#000000ff",
-        },
+        legend: { labels: { color: "#000000ff" } },
+        title: { display: true, text: `${data.estado_rotulo} • ${data.modelo} (mensal)`, color: "#000000ff" },
       },
     },
   });
 }
 
-document
-  .getElementById("btn-prever")
-  .addEventListener("click", rodarPrevisao);
+/* ======= BOTÕES ======= */
+const btnPrever = document.getElementById("btn-prever");
+if (btnPrever) btnPrever.addEventListener("click", rodarPrevisao);
 
-document
-  .getElementById("btn-mensal")
-  .addEventListener("click", rodarPrevisaoMensal);
+const btnMensal = document.getElementById("btn-mensal");
+if (btnMensal) btnMensal.addEventListener("click", rodarPrevisaoMensal);
 
-document
-  .getElementById("btn-teste-csv")
-  .addEventListener("click", rodarPrevisaoCsv);
+const btnTesteCsv = document.getElementById("btn-teste-csv");
+if (btnTesteCsv) btnTesteCsv.addEventListener("click", rodarPrevisaoCsv);
