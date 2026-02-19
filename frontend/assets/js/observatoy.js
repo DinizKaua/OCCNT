@@ -550,6 +550,59 @@ function desenharGraficoMensal(data) {
     },
   });
 }
+/* ======= EXPORTAÇÃO CSV (DETECTA GRÁFICO ATIVO) ======= */
+
+function exportarCsvModeloSelecionado() {
+
+  // Detecta qual gráfico está ativo
+  let graficoAtivo = null;
+
+  if (chartTheta) {
+    graficoAtivo = chartTheta;
+  }
+
+  if (chart) {
+    graficoAtivo = chart;
+  }
+
+  if (!graficoAtivo) {
+    alert("Nenhum gráfico disponível para exportar.");
+    return;
+  }
+
+  const labels = graficoAtivo.data.labels;
+  const datasets = graficoAtivo.data.datasets;
+
+  let csv = "Periodo," + datasets.map(ds => ds.label).join(";") + "\n";
+
+  for (let i = 0; i < labels.length; i++) {
+    const linha = [labels[i]];
+
+    datasets.forEach(ds => {
+      const valor = ds.data[i];
+      linha.push(valor != null ? Number(valor).toFixed(2) : "");
+    });
+
+    csv += linha.join(";") + "\n";
+  }
+
+  const blob = new Blob(["\uFEFF" + csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  const modelo = getModelo();
+  a.href = url;
+  a.download = `previsao_${modelo}.csv`;
+
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
 
 /* ======= BOTÕES ======= */
 const btnPrever = document.getElementById("btn-prever");
@@ -560,3 +613,7 @@ if (btnMensal) btnMensal.addEventListener("click", rodarPrevisaoMensal);
 
 const btnTesteCsv = document.getElementById("btn-teste-csv");
 if (btnTesteCsv) btnTesteCsv.addEventListener("click", rodarPrevisaoCsv);
+
+const btnDownloadCsv = document.getElementById("btn-download-csv");
+if (btnDownloadCsv)
+btnDownloadCsv.addEventListener("click", exportarCsvModeloSelecionado);
