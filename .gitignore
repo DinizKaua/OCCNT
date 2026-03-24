@@ -55,3 +55,11 @@ packrat/src*/
 # Se usar Quarto / R Markdown
 *_files/
 *_cache/
+
+# --------------------
+# OCCNT generated data
+# --------------------
+backend/data/exports/*
+!backend/data/exports/.gitkeep
+backend/data/processed/*
+!backend/data/processed/.gitkeep

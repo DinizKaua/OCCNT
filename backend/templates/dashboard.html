@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCCNT Forecast Panel</title>
+  <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <p class="eyebrow">OCCNT</p>
+      <h1>Painel simples de dados e previsao</h1>
+      <p class="subtitle">Fluxo direto: exportar ou enviar uma base, rodar a previsao e revisar o resultado.</p>
+    </header>
+
+    {% if error_message %}
+      <div class="alert alert--error">{{ error_message }}</div>
+    {% endif %}
+    {% if success_message %}
+      <div class="alert alert--success">{{ success_message }}</div>
+    {% endif %}
+
+    {% if not runtime_status.rscript_ready %}
+      <div class="inline-note">
+        <strong>Rscript nao encontrado.</strong>
+        <span class="mono">{{ runtime_status.rscript_message }}</span>
+      </div>
+    {% endif %}
+
+    <section class="pipeline">
+      <article class="pipeline-step {% if active_tab == 'export' %}is-active{% endif %}">
+        <span>1</span>
+        <div>
+          <strong>Exportar</strong>
+          <p>Salvar um dataset</p>
+        </div>
+      </article>
+      <article class="pipeline-step {% if active_tab == 'predict' %}is-active{% endif %}">
+        <span>2</span>
+        <div>
+          <strong>Prever</strong>
+          <p>Escolher modelo</p>
+        </div>
+      </article>
+      <article class="pipeline-step {% if active_tab == 'view' %}is-active{% endif %}">
+        <span>3</span>
+        <div>
+          <strong>Visualizar</strong>
+          <p>Revisar dados e resultado</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="tabs" id="main-tabs" data-active-tab="{{ active_tab }}">
+      <div class="tabs__bar">
+        <button type="button" class="tab-button {% if active_tab == 'export' %}is-active{% endif %}" data-tab-target="export">Exportar</button>
+        <button type="button" class="tab-button {% if active_tab == 'predict' %}is-active{% endif %}" data-tab-target="predict">Prever</button>
+        <button type="button" class="tab-button {% if active_tab == 'view' %}is-active{% endif %}" data-tab-target="view">Visualizar</button>
+      </div>
+
+      <section class="tab-panel {% if active_tab == 'export' %}is-active{% endif %}" data-tab-panel="export">
+        <div class="grid-main">
+          <article class="panel">
+            <h2>Exportar do DATASUS</h2>
+            <p class="section-lead">Escolha os filtros e gere uma base pronta para uso no painel.</p>
+            <form method="post" action="/dashboard/export" class="form-grid form-grid--2">
+              <input type="hidden" name="active_tab" value="export">
+
+              <label>Sistema
+                <select name="system">
+                  {% for option in system_options %}
+                    <option value="{{ option.value }}" {% if option.value == form_state.export_system %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>UF
+                <select name="uf">
+                  {% for option in uf_options %}
+                    <option value="{{ option.sigla }}" {% if option.sigla == form_state.export_uf %}selected{% endif %}>{{ option.sigla }} - {{ option.name }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Ano inicial
+                <select name="year_start">
+                  {% for year in year_options %}
+                    <option value="{{ year }}" {% if year == form_state.export_year_start %}selected{% endif %}>{{ year }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Ano final
+                <select name="year_end">
+                  {% for year in year_options %}
+                    <option value="{{ year }}" {% if year == form_state.export_year_end %}selected{% endif %}>{{ year }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Granularidade
+                <select name="granularity">
+                  {% for option in granularity_options %}
+                    <option value="{{ option.value }}" {% if option.value == form_state.export_granularity %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Filtro CID
+                <select name="cid_profile">
+                  {% for option in cid_profile_options %}
+                    <option value="{{ option.value }}" {% if option.value == form_state.export_cid_profile %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Mes inicial
+                <select name="month_start">
+                  {% for month in month_options %}
+                    <option value="{{ month }}" {% if month == form_state.export_month_start %}selected{% endif %}>{{ month }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Mes final
+                <select name="month_end">
+                  {% for month in month_options %}
+                    <option value="{{ month }}" {% if month == form_state.export_month_end %}selected{% endif %}>{{ month }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <div class="form-action form-action--full">
+                <button type="submit">Gerar dataset</button>
+              </div>
+            </form>
+          </article>
+
+          <aside class="stack">
+            <article class="panel panel--soft">
+              <h2>Enviar CSV manual</h2>
+              <form method="post" action="/dashboard/upload" enctype="multipart/form-data" class="form-grid">
+                <input type="hidden" name="active_tab" value="export">
+                <label>Arquivo CSV
+                  <input type="file" name="dataset_file" accept=".csv" required>
+                </label>
+                <button type="submit">Salvar CSV</button>
+              </form>
+            </article>
+
+            {% if export_result %}
+              <article class="panel panel--soft">
+                <h2>Dataset gerado</h2>
+                <p><strong>Nome:</strong> {{ selected_dataset_info.display_name if selected_dataset_info else export_result.preferred_dataset_file }}</p>
+                <div class="action-row">
+                  <a class="link-button" href="/?tab=predict&dataset_file={{ export_result.preferred_dataset_file }}">Ir para previsao</a>
+                  <a class="link-button link-button--soft" href="/?tab=view&dataset_file={{ export_result.preferred_dataset_file }}">Visualizar</a>
+                </div>
+              </article>
+            {% endif %}
+
+            <article class="panel panel--soft">
+              <h2>Datasets prontos</h2>
+              <ul class="simple-list">
+                {% for item in datasets[:6] %}
+                  <li>
+                    <div>
+                      <strong>{{ item.display_name or item.file_name }}</strong>
+                      <span>{{ item.frequency }} | {{ item.source_group }}</span>
+                    </div>
+                    <a class="table-link" href="/?tab=predict&dataset_file={{ item.file_id }}">Usar</a>
+                  </li>
+                {% else %}
+                  <li class="simple-list__empty">Nenhum dataset salvo ainda.</li>
+                {% endfor %}
+              </ul>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <section class="tab-panel {% if active_tab == 'predict' %}is-active{% endif %}" data-tab-panel="predict">
+        {% if not has_datasets %}
+          <article class="panel empty-state">
+            <h2>Nenhum dataset disponivel</h2>
+            <p>Primeiro gere um dataset na aba Exportar ou envie um CSV manual.</p>
+            <a class="link-button" href="/?tab=export">Abrir exportacao</a>
+          </article>
+        {% else %}
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Executar previsao</h2>
+                <p class="section-lead">Selecione uma base e rode a previsao.</p>
+              </div>
+              {% if selected_dataset_info %}
+                <div class="mini-badge">
+                  <strong>{{ selected_dataset_info.display_name or selected_dataset_info.file_name }}</strong>
+                  <span>{{ selected_dataset_info.frequency }}</span>
+                </div>
+              {% endif %}
+            </div>
+
+            <form method="post" action="/dashboard/predict" class="form-grid form-grid--2">
+              <input type="hidden" name="active_tab" value="predict">
+
+              <label>Dataset
+                <select name="dataset_file" required>
+                  {% for item in datasets %}
+                    <option value="{{ item.file_id }}" {% if item.file_id == selected_dataset %}selected{% endif %}>{{ item.display_name or item.file_name }} | {{ item.frequency }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Estado
+                <select name="state_code">
+                  {% for option in state_options %}
+                    <option value="{{ option.value }}" {% if option.value == form_state.predict_state_code %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Modo
+                <select name="mode">
+                  {% for option in mode_options %}
+                    <option value="{{ option.value }}" {% if option.value == form_state.predict_mode %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Modelo
+                <select name="model">
+                  {% for option in model_options %}
+                    <option value="{{ option.value }}" {% if option.value == form_state.predict_model %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Horizonte anual
+                <select name="forecast_years">
+                  {% for value in forecast_year_options %}
+                    <option value="{{ value }}" {% if value == form_state.predict_forecast_years %}selected{% endif %}>{{ value }} ano(s)</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Horizonte mensal
+                <select name="forecast_periods">
+                  {% for value in forecast_period_options %}
+                    <option value="{{ value }}" {% if value == form_state.predict_forecast_periods %}selected{% endif %}>{{ value }} periodo(s)</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Confianca
+                <select name="confidence">
+                  {% for value in confidence_options %}
+                    <option value="{{ value }}" {% if value == form_state.predict_confidence %}selected{% endif %}>{{ (value * 100)|round|int }}%</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label>Sazonalidade
+                <select name="seasonal_option">
+                  {% for option in seasonal_options %}
+                    <option value="{{ option.value }}" {% if option.value == form_state.predict_seasonal_option %}selected{% endif %}>{{ option.label }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <div class="form-action form-action--full">
+                <button type="submit">Rodar previsao</button>
+              </div>
+            </form>
+          </article>
+        {% endif %}
+
+        {% if prediction_result and active_tab == 'predict' %}
+          {% set time_key = "year" if prediction_result.output_frequency == "annual" else "month" %}
+          <article class="panel">
+            <div class="result-strip">
+              <div><span>Modelo</span><strong>{{ prediction_result.model }}</strong></div>
+              <div><span>Estado</span><strong>{{ prediction_result.state_label }}</strong></div>
+              <div><span>Historico</span><strong>{{ prediction_result.historical_points or prediction_result.historical_data|length }}</strong></div>
+              <div><span>Previsao</span><strong>{{ prediction_result.forecast_points or prediction_result.forecast|length }}</strong></div>
+            </div>
+
+            <div class="chart-wrap">
+              <p class="chart-text">Linha verde: historico. Linha laranja: previsao conectada ao ultimo ponto real.</p>
+              <div class="chart-legend" aria-hidden="true">
+                <span class="legend-item"><i class="legend-line legend-line--history"></i>Historico</span>
+                <span class="legend-item"><i class="legend-line legend-line--forecast"></i>Previsao</span>
+              </div>
+              <canvas id="line-chart" class="line-chart" aria-label="Grafico de linha de previsao"></canvas>
+            </div>
+
+            <div class="action-row">
+              {% if selected_result_file %}
+                <a class="link-button" href="/?tab=view&result_file={{ selected_result_file }}">Abrir resultado salvo</a>
+              {% endif %}
+              {% if selected_dataset %}
+                <a class="link-button link-button--soft" href="/?tab=view&dataset_file={{ selected_dataset }}">Ver dataset</a>
+              {% endif %}
+            </div>
+
+            <details class="accordion">
+              <summary>Ver detalhes</summary>
+              <div class="result-tables">
+                <div class="table-wrap">
+                  <h3>Historico</h3>
+                  <table>
+                    <thead><tr><th>{{ "Ano" if time_key == "year" else "Mes" }}</th><th>Valor</th></tr></thead>
+                    <tbody>
+                      {% for row in prediction_result.historical_data %}
+                        <tr><td>{{ row[time_key] }}</td><td>{{ "%.2f"|format(row.value) }}</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="table-wrap">
+                  <h3>Previsao</h3>
+                  <table>
+                    <thead><tr><th>{{ "Ano" if time_key == "year" else "Mes" }}</th><th>Valor</th><th>Inferior</th><th>Superior</th></tr></thead>
+                    <tbody>
+                      {% for row in prediction_result.forecast %}
+                        <tr><td>{{ row[time_key] }}</td><td>{{ "%.2f"|format(row.value) }}</td><td>{{ "%.2f"|format(row.lower) }}</td><td>{{ "%.2f"|format(row.upper) }}</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </details>
+          </article>
+        {% endif %}
+      </section>
+
+      <section class="tab-panel {% if active_tab == 'view' %}is-active{% endif %}" data-tab-panel="view">
+        <div class="grid-main">
+          <article class="panel">
+            <h2>Selecionar dataset</h2>
+            <form method="post" action="/dashboard/datasets/select" class="inline-form">
+              <input type="hidden" name="active_tab" value="view">
+              <label>Dataset
+                <select name="dataset_file">
+                  {% for item in datasets %}
+                    <option value="{{ item.file_id }}" {% if item.file_id == selected_dataset %}selected{% endif %}>{{ item.display_name or item.file_name }} | {{ item.frequency }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <button type="submit">Abrir</button>
+            </form>
+
+            {% if preview and selected_dataset_info %}
+              <div class="mini-badge mini-badge--full">
+                <strong>{{ selected_dataset_info.display_name or selected_dataset_info.file_name }}</strong>
+                <span>{{ selected_dataset_info.source_group }} | {{ selected_dataset_info.layout }} | {{ selected_dataset_info.frequency }}</span>
+              </div>
+            {% endif %}
+
+            {% if preview %}
+              <details class="accordion" open>
+                <summary>Preview da base</summary>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr>{% for col in preview.columns %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+                    <tbody>
+                      {% for row in preview.rows %}
+                        <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            {% endif %}
+          </article>
+
+          <aside class="stack">
+            <article class="panel panel--soft">
+              <h2>Selecionar resultado</h2>
+              {% if processed_results %}
+                <form method="post" action="/dashboard/results/view" class="form-grid">
+                  <input type="hidden" name="active_tab" value="view">
+                  <label>Resultado salvo
+                    <select name="result_file">
+                      {% for item in processed_results %}
+                        <option value="{{ item.result_file }}" {% if item.result_file == selected_result_file %}selected{% endif %}>{{ item.result_file }}</option>
+                      {% endfor %}
+                    </select>
+                  </label>
+                  <button type="submit">Abrir resultado</button>
+                </form>
+              {% else %}
+                <p class="section-lead">Nenhum resultado salvo ainda.</p>
+              {% endif %}
+            </article>
+
+            <article class="panel panel--soft">
+              <h2>Arquivos recentes</h2>
+              <ul class="simple-list">
+                {% for item in processed_results[:4] %}
+                  <li>
+                    <div>
+                      <strong>{{ item.result_file }}</strong>
+                      <span>{{ item.model }}</span>
+                    </div>
+                    <a class="table-link" href="/?tab=view&result_file={{ item.result_file }}">Abrir</a>
+                  </li>
+                {% else %}
+                  <li class="simple-list__empty">Nenhum resultado salvo.</li>
+                {% endfor %}
+              </ul>
+            </article>
+          </aside>
+        </div>
+
+        {% if prediction_result and active_tab == 'view' %}
+          <article class="panel">
+            <div class="result-strip">
+              <div><span>Modelo</span><strong>{{ prediction_result.model }}</strong></div>
+              <div><span>Estado</span><strong>{{ prediction_result.state_label }}</strong></div>
+              <div><span>Historico</span><strong>{{ prediction_result.historical_points or prediction_result.historical_data|length }}</strong></div>
+              <div><span>Previsao</span><strong>{{ prediction_result.forecast_points or prediction_result.forecast|length }}</strong></div>
+            </div>
+            <div class="chart-wrap">
+              <p class="chart-text">Linha verde: historico. Linha laranja: previsao conectada.</p>
+              <div class="chart-legend" aria-hidden="true">
+                <span class="legend-item"><i class="legend-line legend-line--history"></i>Historico</span>
+                <span class="legend-item"><i class="legend-line legend-line--forecast"></i>Previsao</span>
+              </div>
+              <canvas id="line-chart" class="line-chart" aria-label="Grafico de linha de previsao"></canvas>
+            </div>
+          </article>
+        {% endif %}
+      </section>
+    </section>
+  </main>
+
+  <script id="chart-data" type="application/json">{{ chart_payload|tojson }}</script>
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>
