@@ -1,115 +1,14 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Observatório de Condições Crônicas Não Transmissíveis - Dados e informações sobre doenças cardiovasculares, respiratórias, câncer e outras condições crônicas">
-    <link rel="shortcut icon" href="assets/images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="assets/css/navigation.css">
-    <link rel="stylesheet" href="assets/css/cards.css">
-    <title>OCCNT - Observatório de Condições Crônicas Não Transmissíveis</title>
-</head>
-<body> 
-    <header class="header">
-        <nav class="navigation" role="navigation" aria-label="Navegação principal">
-            <button class="nav-button" data-section="dados" aria-label="Acessar dados sobre condições crônicas">Dados</button>
-            <button class="nav-button" data-section="sobre" aria-label="Informações sobre o observatório">Sobre</button>
-            <button class="nav-button" data-section="repositorio" aria-label="Acessar repositório de dados">Repositório</button>
-        </nav>
-    </header>
-    <main class="main-content" id="main-content">
-        <section class="hero-section">
-            <div class="hero-content">
-                <h1 class="main-title">Observatório de Condições Crônicas Não Transmissíveis</h1>
-                <button class="about-button" data-action="sobre-projeto" aria-label="Saiba mais detalhes sobre o projeto OCCNT">sobre o projeto</button>
-            </div>
-        </section>
-
-        <section class="diseases-section">
-            <div class="diseases-grid" role="grid" aria-label="Categorias de doenças crônicas não transmissíveis">
-                
-                <button class="disease-card" data-category="cardiovascular" aria-describedby="cardio-desc">
-                    <div class="card-content">
-                        <img src="assets/images/symbols/anatomy_heart.png" alt="Icone referencial a doenças cardiovasculares" class="disease-image">
-                        <div class="text-content">
-                            <h3 class="card-title">Doenças Cardiovasculares</h3>
-                            <p class="card-description" id="cardio-desc">Hipertensão arterial, Arritmias, Doença Arterial Coronariana</p>
-                        </div>
-                    </div>
-                </button>
-
-                <button class="disease-card" data-category="respiratoria" aria-describedby="resp-desc">
-                    <div class="card-content">
-                        <img src="assets/images/symbols/lung.png" alt="Icone referencial a doenças respiratórias" class="disease-image">
-                        <div class="text-content">
-                            <h3 class="card-title">Doenças Respiratórias</h3>
-                            <p class="card-description" id="resp-desc">Asma, Bronquite crônica, Enfisema Pulmonar</p>
-                        </div>
-                    </div>
-                </button>
-
-                <button class="disease-card" data-category="cancer" aria-describedby="cancer-desc">
-                    <div class="card-content">
-                        <img src="assets/images/symbols/dna.png" alt="Icone referencial a cancer" class="disease-image">
-                        <div class="text-content">
-                            <h3 class="card-title">Câncer</h3>
-                            <p class="card-description" id="cancer-desc">Câncer de Mama, Câncer de Pulmão, Câncer Colorretal</p>
-                        </div>
-                    </div>
-                </button>
-
-                <button class="disease-card" data-category="neurologica" aria-describedby="neuro-desc">
-                    <div class="card-content">
-                        <img src="assets/images/symbols/anatomy_brain.png" alt="Icone referencial a doenças neurologicas" class="disease-image">
-                        <div class="text-content">
-                            <h3 class="card-title">Doenças Neurológicas e Mentais</h3>
-                            <p class="card-description" id="neuro-desc">Doença de Alzheimer, Doença de Parkinson, Epilepsia</p>
-                        </div>
-                    </div>
-                </button>
-
-                <button class="disease-card" data-category="endocrina" aria-describedby="endo-desc">
-                    <div class="card-content">
-                        <img src="assets/images/symbols/blood_drip.png" alt="Icone referencial a doenças Endócrinas" class="disease-image">
-                        <div class="text-content">
-                            <h3 class="card-title">Doenças Endócrinas, Nutricionais e Metabólicas</h3>
-                            <p class="card-description" id="endo-desc">Diabetes Mellitus, Obesidade, Distúrbios da Tireoide</p>
-                        </div>
-                    </div>
-                </button>
-
-                <button class="disease-card" data-category="sensorial" aria-describedby="sens-desc">
-                    <div class="card-content">
-                        <img src="assets/images/symbols/eye.png" alt="Icone referencial a doenças sensoriais" class="disease-image">
-                            <div class="text-content"><h3 class="card-title">Doenças Sensoriais</h3>
-                            <p class="card-description" id="sens-desc">Glaucoma, Surdez Neurossensorial, Catarata</p>
-                        </div>
-                    </div>
-                </button>
-
-                <button class="disease-card" data-category="osteomuscular" aria-describedby="osteo-desc">
-                    <div class="card-content">
-                        <img src="assets/images/symbols/bone.png" alt="Icone referencial a doenças " class="disease-image">
-                        <div class="text-content">
-                            <h3 class="card-title">Doenças Osteomusculares e Articulares</h3>
-                            <p class="card-description" id="osteo-desc">Artrite Reumatoide, Osteoporose, Fibromialgia</p>
-                        </div>
-                    </div>
-                </button>
-
-                <button class="disease-card" data-category="outras" aria-describedby="outras-desc">
-                    <div class="card-content">
-                        <img src="assets/images/symbols/caduceus_snake.png" alt="Icone referencial a outras doenças ostemusculares" class="disease-image">
-                        <div class="text-content">
-                            <h3 class="card-title">Outras Condições Crônicas Funcionais</h3>
-                            <p class="card-description" id="outras-desc">Lúpus Eritematoso Sistêmico, Doença Celíaca, Endometriose, Sepse</p>
-                        </div>
-                    </div>
-                </button>
-            </div>
-        </section>
-    </main>
-    <footer><small>2025 - Laboratório de Inteligência Interativa - UFMA</small></footer>
-    <script src="assets/js/navigation.js"></script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
