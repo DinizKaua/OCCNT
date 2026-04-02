@@ -1,10 +1,18 @@
-# Ignorar a pasta do ambiente virtual (venv)
-venv/
-
-# Ignorar pastas de cache do Python
-__pycache__/
-
 # Ignorar arquivos de log
 *.log
 
+# Node
+node_modules/
+dist/
+
+# Python
 .python-version
+__pycache__/
+*.pyc
+venv/
+
+# Env
+.env
+
+# OS
+.DS_Store
