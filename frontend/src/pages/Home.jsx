@@ -22,8 +22,8 @@ function Home() {
             />
           </div>
 
-          {/* 🔑 CONTAINER PADRÃO */}
-          <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+          {/*CONTAINER PADRÃO */}
+          <div className="mx-auto px-20 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
 
             <div className="lg:col-span-7">
 
@@ -36,13 +36,12 @@ function Home() {
               </div>
 
               {/* título */}
-              <h1 className="max-w-3xl text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+              <h1 className="text-4xl md:text-8xl font-extrabold tracking-tight leading-tight mb-6">
                 Monitoramento Estratégico de{" "}
                 <span className="text-primary-container">DCNT</span> no Brasil
               </h1>
-
               {/* descrição */}
-              <p className="text-on-surface-variant max-w-2xl text-lg mb-10 leading-relaxed">
+              <p className="text-on-surface-variant max-w-4xl text-lg mb-10 leading-relaxed">
                 Acesso transparente a indicadores epidemiológicos e tendências de Doenças Crônicas Não Transmissíveis, subsidiando políticas públicas e decisões em saúde fundamentadas em evidências do Ministério da Saúde.
               </p>
 

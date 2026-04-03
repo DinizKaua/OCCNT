@@ -1,10 +1,10 @@
 function Navbar() {
   return (
     <header className="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-slate-200">
-      <nav className="flex items-center px-8 py-4">
+      <nav className="flex items-center px-8 py-3">
 
         <div className="flex-1">
-          <span className="text-xl font-bold tracking-tighter text-[#001b3c]">
+          <span className="text-2xl font-bold tracking-tighter text-[#001b3c]">
             Observatório DCNT
           </span>
         </div>
