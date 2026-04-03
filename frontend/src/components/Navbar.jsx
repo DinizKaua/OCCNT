@@ -1,31 +1,37 @@
 function Navbar() {
   return (
-    <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-md border-b border-white/10 shadow-xl shadow-cyan-900/10 flex items-center px-8 py-4">
+    <header className="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-slate-200">
+      <nav className="flex items-center px-8 py-4">
 
-      {/* ESQUERDA */}
-      <div className="flex-1">
-        <div className="text-2xl font-bold tracking-tighter text-cyan-400">
-          Observatório DCNT
-        </div>
-      </div>
-
-      {/* CENTRO */}
-      <div className="flex-1 hidden md:flex justify-center gap-8">
-        <a href="#" className="text-slate-400 hover:text-white">Circulatório</a>
-        <a href="#" className="text-slate-400 hover:text-white">Respiratórias</a>
-        <a href="#" className="text-slate-400 hover:text-white">Neoplasias</a>
-        <a href="#" className="text-slate-400 hover:text-white">Diabetes</a>
-        <a href="#" className="text-slate-400 hover:text-white">Obesidade</a>
-      </div>
-
-      {/* DIREITA */}
-      <div className="flex-1 flex justify-end">
-        <span className="material-symbols-outlined text-slate-400 hover:text-white text-2xl cursor-pointer">
-          account_circle
+        <div className="flex-1">
+          <span className="text-xl font-bold tracking-tighter text-[#001b3c]">
+            Observatório DCNT
           </span>
-      </div>
+        </div>
 
-    </nav>
+        <div className="flex-1 hidden md:flex justify-center gap-8">
+          <a href="#" className="text-[#004587] border-b-2 border-[#004587] pb-1 font-bold">
+            Dados
+          </a>
+          <a href="#" className="text-slate-600 hover:text-[#004587] transition-colors">
+            Sobre
+          </a>
+          <a href="#" className="text-slate-600 hover:text-[#004587] transition-colors">
+            Repositório
+          </a>
+          <a href="#" className="text-slate-600 hover:text-[#004587] transition-colors">
+            Contato
+          </a>
+        </div>
+
+        <div className="flex-1 flex justify-end">
+          <button className="px-6 py-2 bg-gradient-to-r from-primary to-primary-container text-white rounded-xl font-medium hover:opacity-90 transition-all active:scale-95">
+            Entrar
+          </button>
+        </div>
+
+      </nav>
+    </header>
   )
 }
 
