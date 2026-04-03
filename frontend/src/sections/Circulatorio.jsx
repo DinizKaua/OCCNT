@@ -30,9 +30,9 @@ function Circulatorio() {
   ]
 
   return (
-    <section className="py-20">
+    <section>
 
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6 py-20">
 
         {/* título */}
         <div className="mb-10">
