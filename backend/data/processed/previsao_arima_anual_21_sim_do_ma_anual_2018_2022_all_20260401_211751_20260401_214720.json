@@ -1,0 +1,65 @@
+{
+  "saved_at": "2026-04-01T21:47:20Z",
+  "dataset_file": "exports/sim_do_ma_anual_2018_2022_all_20260401_211751/sim_do_ma_anual_2018_2022_all_20260401_211751_dados_brutos.csv",
+  "request": {
+    "state": "21",
+    "mode": "auto",
+    "model": "arima",
+    "forecast_years": 3,
+    "forecast_periods": 12,
+    "confidence": 0.95,
+    "seasonal": null
+  },
+  "result": {
+    "source_frequency": "annual",
+    "output_frequency": "annual",
+    "state_label": "21 Maranhao",
+    "historical_data": [
+      {
+        "year": 2018,
+        "value": 34525.0
+      },
+      {
+        "year": 2019,
+        "value": 35128.0
+      },
+      {
+        "year": 2020,
+        "value": 43271.0
+      },
+      {
+        "year": 2021,
+        "value": 44654.0
+      },
+      {
+        "year": 2022,
+        "value": 39936.0
+      }
+    ],
+    "forecast": [
+      {
+        "year": 2023,
+        "value": 41497.6028948483,
+        "lower": 34147.07169695779,
+        "upper": 50430.37010801504
+      },
+      {
+        "year": 2024,
+        "value": 47679.339532559075,
+        "lower": 31802.702558260276,
+        "upper": 71481.70783175367
+      },
+      {
+        "year": 2025,
+        "value": 56317.733253365084,
+        "lower": 32890.39731750534,
+        "upper": 96431.50132081212
+      }
+    ],
+    "model": "ARIMA (auto_arima)",
+    "historical_points": 5,
+    "forecast_points": 3,
+    "last_observed": 39936.0,
+    "peak_observed": 44654.0
+  }
+}

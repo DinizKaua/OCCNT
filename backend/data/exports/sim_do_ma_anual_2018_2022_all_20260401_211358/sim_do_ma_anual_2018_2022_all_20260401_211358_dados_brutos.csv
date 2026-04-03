@@ -1,0 +1,11 @@
+TABNET-like CSV generated via microdatasus
+Source: SIM deaths
+System: SIM-DO
+UF: MA (21 Maranhao)
+Period: 2018-2022
+Granularity: year
+CID filter: none
+Encoding: ISO-8859-1; Separator: ';'; header in line 10
+Generated for OCCNT panel.
+Unidade da Federacao;2018;2019;2020;2021;2022
+21 Maranhao;34525;35128;43271;44654;39936

@@ -1,34 +1,47 @@
-function Card({ icon, title, trend, trendType }) {
-  return (
-    <div className="group p-6 rounded-xl border border-outline-variant/10 bg-surface-container-low hover:shadow-xl transition-all duration-300">
+import { Link } from "react-router-dom"
 
-      {/* ícone */}
-      <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-6 text-primary group-hover:scale-120 transition-transform">
+function Card({ icon, title, trend, trendType, to }) {
+  const content = (
+    <>
+      <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg text-primary transition-transform group-hover:scale-120">
         <span className="material-symbols-outlined text-5xl">{icon}</span>
       </div>
 
-      {/* título */}
-      <h3 className="text-xl font-bold text-on-surface mb-2">
-        {title}
-      </h3>
+      <h3 className="mb-2 text-xl font-bold text-on-surface">{title}</h3>
 
-      {/* tendência */}
-      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold mb-6
+      <div
+        className={`mb-6 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold
         ${trendType === "up" ? "bg-red-100 text-red-600" : ""}
         ${trendType === "down" ? "bg-blue-100 text-blue-600" : ""}
         ${trendType === "neutral" ? "bg-gray-100 text-gray-600" : ""}
-      `}>
+      `}
+      >
         <span className="material-symbols-outlined text-xs">
           {trendType === "up" ? "trending_up" : trendType === "down" ? "trending_down" : "trending_flat"}
         </span>
         {trend}
       </div>
 
-      {/* botão */}
-      <button className="w-full py-3 border border-outline/20 rounded-lg text-sm font-bold hover:bg-primary hover:text-white transition-all">
+      <span className="inline-flex w-full items-center justify-center rounded-lg border border-outline/20 py-3 text-sm font-bold transition-all hover:bg-primary hover:text-white">
         Ver Detalhes
-      </button>
+      </span>
+    </>
+  )
 
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className="group block rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all duration-300 hover:shadow-xl"
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <div className="group rounded-xl border border-outline-variant/10 bg-surface-container-low p-6 transition-all duration-300 hover:shadow-xl">
+      {content}
     </div>
   )
 }

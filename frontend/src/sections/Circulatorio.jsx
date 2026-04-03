@@ -1,57 +1,21 @@
 import Card from "../components/Card"
+import { diseaseCards } from "../data/diseases"
 
 function Circulatorio() {
-
-  const dados = [
-    {
-      icon: "cardiology",
-      title: "Hipertensão",
-      trend: "+2% este ano",
-      trendType: "up"
-    },
-    {
-      icon: "neurology",
-      title: "AVC",
-      trend: "Estável",
-      trendType: "neutral"
-    },
-    {
-      icon: "heart_check",
-      title: "Infarto",
-      trend: "+1.5%",
-      trendType: "up"
-    },
-    {
-      icon: "ecg",
-      title: "ICC",
-      trend: "-0.8%",
-      trendType: "down"
-    }
-  ]
-
   return (
-    <section className="py-20">
-
-      <div className="max-w-7xl mx-auto px-6">
-
-        {/* título */}
+    <section className="py-20" id="circulatorio">
+      <div className="mx-auto max-w-7xl px-6">
         <div className="mb-10">
-          <h2 className="text-3xl font-bold mb-2">
-            Doenças do Aparelho Circulatório
-          </h2>
-
-          <div className="h-1 w-24 bg-primary rounded-full"></div>
+          <h2 className="mb-2 text-3xl font-bold">Doencas do Aparelho Circulatorio</h2>
+          <div className="h-1 w-24 rounded-full bg-primary"></div>
         </div>
 
-        {/* grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {dados.map((item, index) => (
-            <Card key={index} {...item} />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {diseaseCards.map((item) => (
+            <Card key={item.slug} {...item} to={`/doencas/${item.slug}`} />
           ))}
         </div>
-
       </div>
-
     </section>
   )
 }

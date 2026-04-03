@@ -1,35 +1,35 @@
+import { Link } from "react-router-dom"
+
 function Navbar() {
   return (
-    <header className="sticky top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-slate-200">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/70 backdrop-blur-md">
       <nav className="flex items-center px-8 py-4">
-
         <div className="flex-1">
-          <span className="text-xl font-bold tracking-tighter text-[#001b3c]">
-            Observatório DCNT
-          </span>
+          <Link to="/" className="text-xl font-bold tracking-tighter text-[#001b3c]">
+            Observatorio DCNT
+          </Link>
         </div>
 
-        <div className="flex-1 hidden md:flex justify-center gap-8">
-          <a href="#" className="text-[#004587] border-b-2 border-[#004587] pb-1 font-bold">
+        <div className="hidden flex-1 justify-center gap-8 md:flex">
+          <Link to="/" className="border-b-2 border-[#004587] pb-1 font-bold text-[#004587]">
             Dados
-          </a>
-          <a href="#" className="text-slate-600 hover:text-[#004587] transition-colors">
+          </Link>
+          <a href="#" className="text-slate-600 transition-colors hover:text-[#004587]">
             Sobre
           </a>
-          <a href="#" className="text-slate-600 hover:text-[#004587] transition-colors">
-            Repositório
+          <a href="#" className="text-slate-600 transition-colors hover:text-[#004587]">
+            Repositorio
           </a>
-          <a href="#" className="text-slate-600 hover:text-[#004587] transition-colors">
+          <a href="#" className="text-slate-600 transition-colors hover:text-[#004587]">
             Contato
           </a>
         </div>
 
-        <div className="flex-1 flex justify-end">
-          <button className="px-6 py-2 bg-gradient-to-r from-primary to-primary-container text-white rounded-xl font-medium hover:opacity-90 transition-all active:scale-95">
+        <div className="flex flex-1 justify-end">
+          <button className="rounded-xl bg-gradient-to-r from-primary to-primary-container px-6 py-2 font-medium text-white transition-all hover:opacity-90 active:scale-95">
             Entrar
           </button>
         </div>
-
       </nav>
     </header>
   )

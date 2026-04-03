@@ -1,0 +1,40 @@
+{
+  "dataset_name": "sim_do_ma_anual_2018_2022_all_20260401_211751",
+  "created_at": "2026-04-01T21:19:35Z",
+  "request": {
+    "system": "SIM-DO",
+    "uf": "MA",
+    "year_start": 2018,
+    "year_end": 2022,
+    "granularity": "year",
+    "month_start": 1,
+    "month_end": 12,
+    "icd_prefix": "",
+    "dataset_name": null,
+    "rscript_bin": "Rscript"
+  },
+  "resolved_rscript": "C:\\Program Files\\R\\R-4.5.3\\bin\\x64\\Rscript.exe",
+  "command": [
+    "C:\\Program Files\\R\\R-4.5.3\\bin\\x64\\Rscript.exe",
+    "--vanilla",
+    "C:\\Users\\dogwY\\OneDrive\\Documentos\\GitHub\\OCCNT_Dashboard\\backend\\scripts\\export_datasus_database.R",
+    "--system",
+    "SIM-DO",
+    "--uf",
+    "MA",
+    "--year-start",
+    "2018",
+    "--year-end",
+    "2022",
+    "--granularity",
+    "year",
+    "--out",
+    "C:\\Users\\dogwY\\OneDrive\\Documentos\\GitHub\\OCCNT_Dashboard\\backend\\data\\exports\\sim_do_ma_anual_2018_2022_all_20260401_211751\\sim_do_ma_anual_2018_2022_all_20260401_211751_dados_brutos.csv",
+    "--out-clean",
+    "C:\\Users\\dogwY\\OneDrive\\Documentos\\GitHub\\OCCNT_Dashboard\\backend\\data\\exports\\sim_do_ma_anual_2018_2022_all_20260401_211751\\sim_do_ma_anual_2018_2022_all_20260401_211751_dados_modelagem.csv"
+  ],
+  "tabnet_file": "exports/sim_do_ma_anual_2018_2022_all_20260401_211751/sim_do_ma_anual_2018_2022_all_20260401_211751_dados_brutos.csv",
+  "tidy_file": "exports/sim_do_ma_anual_2018_2022_all_20260401_211751/sim_do_ma_anual_2018_2022_all_20260401_211751_dados_modelagem.csv",
+  "stdout": "",
+  "stderr": "ℹ Your local Internet connection seems to be ok.\nℹ DataSUS FTP server seems to be up and reachable.\nℹ Starting download...\ntrying URL 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/DOMA2018.dbc'\nContent type 'unknown' length 2754746 bytes (2.6 MB)\n==================================================\ntrying URL 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/DOMA2019.dbc'\nContent type 'unknown' length 2766753 bytes (2.6 MB)\n==================================================\ntrying URL 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/DOMA2020.dbc'\nContent type 'unknown' length 3504776 bytes (3.3 MB)\n==================================================\ntrying URL 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/DOMA2021.dbc'\nContent type 'unknown' length 3516582 bytes (3.4 MB)\n==================================================\ntrying URL 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/DOMA2022.dbc'\nContent type 'unknown' length 3202765 bytes (3.1 MB)\n==================================================\nOK -> C:\\Users\\dogwY\\OneDrive\\Documentos\\GitHub\\OCCNT_Dashboard\\backend\\data\\exports\\sim_do_ma_anual_2018_2022_all_20260401_211751\\sim_do_ma_anual_2018_2022_all_20260401_211751_dados_brutos.csv\nOK -> C:\\Users\\dogwY\\OneDrive\\Documentos\\GitHub\\OCCNT_Dashboard\\backend\\data\\exports\\sim_do_ma_anual_2018_2022_all_20260401_211751\\sim_do_ma_anual_2018_2022_all_20260401_211751_dados_modelagem.csv\n"
+}
