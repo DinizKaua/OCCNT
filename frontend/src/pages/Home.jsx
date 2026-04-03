@@ -1,6 +1,8 @@
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import Circulatorio from "../sections/Circulatorio"
+import Respiratorias from "../sections/Respiratorias"
+import Neoplasias from "../sections/Neoplasias"
 
 function Home() {
   return (
@@ -11,7 +13,7 @@ function Home() {
       <main className="pb-20">
         
         {/* HERO */}
-        <section className="relative min-h-[614px] flex items-center pt-16 pb-24 overflow-hidden bg-gradient-to-b from-surface to-surface-container-low">
+        <section className="relative min-h-[614px] flex items-center pt-16 pb-12 overflow-hidden bg-gradient-to-b from-surface to-surface-container-low">
 
           {/* imagem (mantida como você pediu) */}
           <div className="absolute right-0 top-0 w-1/2 h-full opacity-10 pointer-events-none">
@@ -22,8 +24,8 @@ function Home() {
             />
           </div>
 
-          {/* 🔑 CONTAINER PADRÃO */}
-          <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+          {/*CONTAINER PADRÃO */}
+          <div className="mx-auto px-20 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
 
             <div className="lg:col-span-7">
 
@@ -36,13 +38,12 @@ function Home() {
               </div>
 
               {/* título */}
-              <h1 className="max-w-3xl text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+              <h1 className="text-4xl md:text-8xl font-extrabold tracking-tight leading-tight mb-6">
                 Monitoramento Estratégico de{" "}
                 <span className="text-primary-container">DCNT</span> no Brasil
               </h1>
-
               {/* descrição */}
-              <p className="text-on-surface-variant max-w-2xl text-lg mb-10 leading-relaxed">
+              <p className="text-on-surface-variant max-w-3xl text-lg mb-10 leading-relaxed">
                 Acesso transparente a indicadores epidemiológicos e tendências de Doenças Crônicas Não Transmissíveis, subsidiando políticas públicas e decisões em saúde fundamentadas em evidências do Ministério da Saúde.
               </p>
 
@@ -65,6 +66,8 @@ function Home() {
         </section>
 
         <Circulatorio />
+        <Respiratorias />
+        <Neoplasias />
 
       </main>
 

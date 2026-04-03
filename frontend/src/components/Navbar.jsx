@@ -3,9 +3,9 @@ import { Link } from "react-router-dom"
 function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/70 backdrop-blur-md">
-      <nav className="flex items-center px-8 py-4">
+      <nav className="flex items-center px-8 py-3">
         <div className="flex-1">
-          <Link to="/" className="text-xl font-bold tracking-tighter text-[#001b3c]">
+          <Link to="/" className="text-2xl font-bold tracking-tighter text-[#001b3c]">
             Observatorio DCNT
           </Link>
         </div>
