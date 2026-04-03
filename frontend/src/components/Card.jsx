@@ -76,7 +76,7 @@ function Card({ icon, title, trend, trendType, onClick, layout = 'vertical', sho
           )}
 
           {/* tendência */}
-          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold
+          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold mb-4
             ${trendType === "up" ? "bg-red-100 text-red-600" : ""}
             ${trendType === "down" ? "bg-blue-100 text-blue-600" : ""}
             ${trendType === "neutral" ? "bg-gray-100 text-gray-600" : ""}
