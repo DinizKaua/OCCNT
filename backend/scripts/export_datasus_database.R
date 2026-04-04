@@ -220,6 +220,12 @@ if (is_sim) {
   source_desc <- "SIH admissions"
 }
 
+available_events <- data_ready$event_date
+available_events <- available_events[!is.na(available_events)]
+if (length(available_events) == 0) {
+  stop("Nenhum periodo disponivel foi encontrado no DATASUS para a selecao informada.")
+}
+
 if (nchar(icd_prefix) > 0) {
   prefixes <- trimws(unlist(strsplit(icd_prefix, ",", fixed = TRUE)))
   data_ready <- data_ready %>%
@@ -227,11 +233,12 @@ if (nchar(icd_prefix) > 0) {
 }
 
 if (granularity == "year") {
+  available_periods <- sort(unique(year(available_events)))
   aggregated <- data_ready %>%
     mutate(period_value = year(event_date)) %>%
     count(period_value, name = "valor")
 
-  all_periods <- data.frame(period_value = seq(year_start, year_end))
+  all_periods <- data.frame(period_value = available_periods)
   aggregated <- all_periods %>%
     left_join(aggregated, by = "period_value") %>%
     mutate(valor = ifelse(is.na(valor), 0L, valor))
@@ -241,13 +248,19 @@ if (granularity == "year") {
     select(`Unidade da Federacao`, period_value, valor) %>%
     pivot_wider(names_from = period_value, values_from = valor, values_fill = 0)
 } else {
+  start_date <- as.Date(sprintf("%04d-%02d-01", year_start, month_start))
+  end_date <- as.Date(sprintf("%04d-%02d-01", year_end, month_end))
+  available_months <- sort(unique(floor_date(available_events, unit = "month")))
+  available_months <- available_months[available_months >= start_date & available_months <= end_date]
+  if (length(available_months) == 0) {
+    stop("Nenhum mes disponivel foi encontrado no DATASUS para a selecao informada.")
+  }
+
   aggregated <- data_ready %>%
     mutate(month_value = floor_date(event_date, unit = "month")) %>%
     count(month_value, name = "valor")
 
-  start_date <- as.Date(sprintf("%04d-%02d-01", year_start, month_start))
-  end_date <- as.Date(sprintf("%04d-%02d-01", year_end, month_end))
-  all_months <- data.frame(month_value = seq(from = start_date, to = end_date, by = "1 month"))
+  all_months <- data.frame(month_value = available_months)
 
   aggregated <- all_months %>%
     left_join(aggregated, by = "month_value") %>%

@@ -38,9 +38,15 @@ function Card({
       </div>
 
       {showButton ? (
-        <ActionButton onClick={onClick} block={false}>
-          Ver Detalhes
-        </ActionButton>
+        to ? (
+          <span className="inline-flex rounded-lg border border-outline/20 px-6 py-3 text-sm font-bold transition-all hover:bg-primary hover:text-white">
+            Ver Detalhes
+          </span>
+        ) : (
+          <ActionButton onClick={onClick} block={false}>
+            Ver Detalhes
+          </ActionButton>
+        )
       ) : null}
     </>
   ) : (

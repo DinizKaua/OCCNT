@@ -1,21 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from ..config import DATA_DIR, EXPORTS_DIR, PROCESSED_DIR, R_EXPORT_SCRIPT, SAMPLES_DIR
-from .dataset_catalog import list_dataset_files
-from .datasus_export import list_export_jobs, resolve_rscript_command
-from .processed_results import list_processed_results
+from ..config import DATABASE_URL, DATA_DIR, R_EXPORT_SCRIPT, RUNTIME_DIR, SAMPLES_DIR, TEMP_EXPORTS_DIR
+from ..database import check_database_connection
+from .datasus_export import resolve_rscript_command
 
 
-def get_runtime_status(
-    datasets: Optional[List[Dict[str, Any]]] = None,
-    exports: Optional[List[Dict[str, Any]]] = None,
-    processed: Optional[List[Dict[str, Any]]] = None,
-) -> Dict[str, Any]:
-    datasets = datasets if datasets is not None else list_dataset_files()
-    exports = exports if exports is not None else list_export_jobs()
-    processed = processed if processed is not None else list_processed_results()
+def get_runtime_status(counts: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    counts = counts or {}
 
     rscript_path = ""
     rscript_ready = False
@@ -23,22 +16,25 @@ def get_runtime_status(
     try:
         rscript_path = resolve_rscript_command("Rscript")
         rscript_ready = True
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         rscript_message = str(exc)
 
+    database_ready, database_message = check_database_connection()
     return {
         "data_dir": str(DATA_DIR),
-        "exports_dir": str(EXPORTS_DIR),
         "samples_dir": str(SAMPLES_DIR),
-        "processed_dir": str(PROCESSED_DIR),
+        "runtime_dir": str(RUNTIME_DIR),
+        "temp_exports_dir": str(TEMP_EXPORTS_DIR),
         "r_export_script_exists": R_EXPORT_SCRIPT.exists(),
         "r_export_script": str(R_EXPORT_SCRIPT),
         "rscript_ready": rscript_ready,
         "rscript_path": rscript_path,
         "rscript_message": rscript_message,
-        "datasets_count": len(datasets),
-        "exports_count": len(exports),
-        "processed_count": len(processed),
-        "sample_datasets_count": len([item for item in datasets if item.get("source_group") == "samples"]),
-        "pipeline_ready": bool(rscript_ready and R_EXPORT_SCRIPT.exists()),
+        "database_ready": database_ready,
+        "database_message": database_message,
+        "database_url": DATABASE_URL,
+        "datasets_count": int(counts.get("datasets_count", 0)),
+        "exports_count": int(counts.get("exports_count", 0)),
+        "processed_count": int(counts.get("processed_count", 0)),
+        "pipeline_ready": bool(rscript_ready and R_EXPORT_SCRIPT.exists() and database_ready),
     }

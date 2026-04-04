@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import re
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -191,6 +191,52 @@ def preview_dataframe(csv_path: Path, limit: int = 20) -> pd.DataFrame:
     return frame.head(limit)
 
 
+def detect_period_bounds(csv_path: Path) -> Dict[str, int]:
+    metadata = detect_csv_metadata(csv_path)
+    if metadata.layout == "tabnet":
+        if metadata.header_index is None:
+            raise ValueError("TABNET CSV header index was not detected.")
+        frame = _load_tabnet_dataframe(csv_path, metadata.encoding, metadata.header_index)
+        if metadata.source_frequency == "annual":
+            years = [int(re.search(r"(\d{4})", str(column)).group(1)) for column in frame.columns[1:]]  # type: ignore[union-attr]
+            return {
+                "year_start": min(years),
+                "year_end": max(years),
+                "month_start": 1,
+                "month_end": 12,
+            }
+        months = _parse_month_index(pd.Series(frame.columns[1:], dtype=str))
+        return {
+            "year_start": int(months.min().year),
+            "year_end": int(months.max().year),
+            "month_start": int(months.min().month),
+            "month_end": int(months.max().month),
+        }
+
+    frame = _load_tidy_dataframe(csv_path, metadata.encoding)
+    source_frequency = _detect_tidy_frequency(frame)
+    period_column = _column_name(frame, ["periodo", "period"])
+    if period_column is None:
+        raise ValueError("Tidy CSV must include a periodo column.")
+
+    if source_frequency == "annual":
+        years = pd.to_numeric(frame[period_column].astype(str).str.extract(r"(\d{4})")[0], errors="coerce").dropna().astype(int)
+        return {
+            "year_start": int(years.min()),
+            "year_end": int(years.max()),
+            "month_start": 1,
+            "month_end": 12,
+        }
+
+    months = _parse_month_index(frame[period_column].astype(str))
+    return {
+        "year_start": int(months.min().year),
+        "year_end": int(months.max().year),
+        "month_start": int(months.min().month),
+        "month_end": int(months.max().month),
+    }
+
+
 def _load_tabnet_dataframe(csv_path: Path, encoding: str, header_index: int) -> pd.DataFrame:
     lines, _ = _read_lines(csv_path)
     headers = _normalize_month_headers(lines[header_index].split(";"))
@@ -345,9 +391,33 @@ def _parse_month_index(values: pd.Series) -> pd.DatetimeIndex:
 
 def _to_numeric(values: pd.Series) -> pd.Series:
     cleaned = values.astype(str).str.replace('"', "", regex=False).str.strip()
-    cleaned = cleaned.str.replace(".", "", regex=False)
-    cleaned = cleaned.str.replace(",", ".", regex=False)
-    return pd.to_numeric(cleaned, errors="coerce").fillna(0.0).astype(float)
+    normalized = cleaned.map(_normalize_numeric_text)
+    return pd.to_numeric(normalized, errors="coerce").fillna(0.0).astype(float)
+
+
+def _normalize_numeric_text(value: str) -> str:
+    text = str(value).strip()
+    if not text:
+        return ""
+
+    if "," in text and "." in text:
+        if text.rfind(",") > text.rfind("."):
+            return text.replace(".", "").replace(",", ".")
+        return text.replace(",", "")
+
+    if "," in text:
+        head, tail = text.rsplit(",", 1)
+        if tail.isdigit() and len(tail) in (1, 2):
+            return f"{head.replace(',', '')}.{tail}"
+        return text.replace(",", "")
+
+    if "." in text:
+        head, tail = text.rsplit(".", 1)
+        if tail.isdigit() and len(tail) in (1, 2):
+            return f"{head}.{tail}"
+        return text.replace(".", "")
+
+    return text
 
 
 def _column_name(frame: pd.DataFrame, options: List[str]) -> Optional[str]:

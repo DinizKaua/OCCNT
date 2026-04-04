@@ -1,80 +1,100 @@
+import { Link } from "react-router-dom"
+
+const resourceLinks = [
+  { label: "DATASUS", to: "/informacoes" },
+  { label: "Portal Gov.br", to: "/repositorio" },
+  { label: "Open Data", to: "/informacoes" },
+]
+
+const institutionalLinks = [
+  { label: "Privacidade", to: "/privacidade" },
+  { label: "Termos de Uso", to: "/termos" },
+  { label: "Contato", to: "/contato" },
+]
+
 function Footer() {
   return (
     <footer>
-      {/* Banner superior - DATASUS */}
-      <section className="py-12 bg-primary text-white">
-        <div className="max-w-7xl mx-auto px-20 flex flex-wrap justify-between items-center gap-8">
+      <section className="bg-primary py-12 text-white">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 px-20">
           <div className="flex items-center gap-4">
             <span className="material-symbols-outlined text-4xl opacity-60">verified_user</span>
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest opacity-60">Fonte de Dados</p>
-              <p className="text-lg font-bold">DATASUS - Ministério da Saúde</p>
+              <p className="text-lg font-bold">DATASUS - Ministerio da Saude</p>
             </div>
           </div>
           <div className="flex gap-12 text-center">
             <div>
               <p className="text-4xl font-black">210M+</p>
-              <p className="text-xs opacity-60 mt-1">Registros Analisados</p>
+              <p className="mt-1 text-xs opacity-60">Registros analisados</p>
             </div>
             <div>
               <p className="text-4xl font-black">5.5k+</p>
-              <p className="text-xs opacity-60 mt-1">Municípios Cobertos</p>
+              <p className="mt-1 text-xs opacity-60">Municipios cobertos</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Seção principal do footer */}
       <section className="bg-[#f0f2f5] py-12">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="flex flex-wrap gap-12 justify-between">
-            {/* Coluna Observatório */}
+        <div className="mx-auto max-w-7xl px-8">
+          <div className="flex flex-wrap justify-between gap-12">
             <div className="max-w-xs">
-              <h3 className="font-bold text-[#1a2e4a] text-base mb-3">Observatório DCNT</h3>
-              <p className="text-sm text-[#6b7a99] leading-relaxed mb-4">
-                Iniciativa de transparência e monitoramento contínuo das condições crônicas no Brasil,
-                integrando bases de dados nacionais para a melhoria da saúde pública.
+              <h3 className="mb-3 text-base font-bold text-[#1a2e4a]">Observatorio DCNT</h3>
+              <p className="mb-4 text-sm leading-relaxed text-[#6b7a99]">
+                Painel demonstrativo para monitoramento continuo de condicoes cronicas no Brasil, unindo frontend React,
+                importacao orientada a dados e previsoes visualmente guiadas.
               </p>
             </div>
 
-            {/* Coluna Recursos */}
             <div>
-              <h3 className="font-bold text-[#1a2e4a] text-base mb-4">Recursos</h3>
+              <h3 className="mb-4 text-base font-bold text-[#1a2e4a]">Recursos</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-sm text-[#6b7a99] hover:text-[#1a2e4a] transition-colors">DATASUS</a></li>
-                <li><a href="#" className="text-sm text-[#6b7a99] hover:text-[#1a2e4a] transition-colors">Portal Gov.br</a></li>
-                <li><a href="#" className="text-sm text-[#6b7a99] hover:text-[#1a2e4a] transition-colors">Open Data</a></li>
+                {resourceLinks.map((item) => (
+                  <li key={item.label}>
+                    <Link to={item.to} className="text-sm text-[#6b7a99] transition-colors hover:text-[#1a2e4a]">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Coluna Institucional */}
             <div>
-              <h3 className="font-bold text-[#1a2e4a] text-base mb-4">Institucional</h3>
+              <h3 className="mb-4 text-base font-bold text-[#1a2e4a]">Institucional</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-sm text-[#6b7a99] hover:text-[#1a2e4a] transition-colors">Privacidade</a></li>
-                <li><a href="#" className="text-sm text-[#6b7a99] hover:text-[#1a2e4a] transition-colors">Termos de Uso</a></li>
-                <li><a href="#" className="text-sm text-[#6b7a99] hover:text-[#1a2e4a] transition-colors">Contato</a></li>
+                {institutionalLinks.map((item) => (
+                  <li key={item.label}>
+                    <Link to={item.to} className="text-sm text-[#6b7a99] transition-colors hover:text-[#1a2e4a]">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Barra inferior */}
-      <section className="bg-[#f0f2f5] border-t border-[#dde1ea] py-4">
-        <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
-          <p className="text-sm text-[#6b7a99]">
-            © 2026 Observatório DCNT - Ministério da Saúde
-          </p>
-          <div className="flex gap-4 items-center">
-            <span className="material-symbols-outlined text-xl text-[#6b7a99] cursor-pointer hover:text-[#1a2e4a] transition-colors">language</span>
-            <span className="material-symbols-outlined text-xl text-[#6b7a99] cursor-pointer hover:text-[#1a2e4a] transition-colors">share</span>
-            <span className="material-symbols-outlined text-xl text-[#6b7a99] cursor-pointer hover:text-[#1a2e4a] transition-colors">info</span>
+      <section className="border-t border-[#dde1ea] bg-[#f0f2f5] py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-8">
+          <p className="text-sm text-[#6b7a99]">© 2026 Observatorio DCNT - Ministerio da Saude</p>
+          <div className="flex items-center gap-4">
+            <Link to="/informacoes" className="material-symbols-outlined text-xl text-[#6b7a99] transition-colors hover:text-[#1a2e4a]">
+              language
+            </Link>
+            <Link to="/repositorio" className="material-symbols-outlined text-xl text-[#6b7a99] transition-colors hover:text-[#1a2e4a]">
+              share
+            </Link>
+            <Link to="/sobre" className="material-symbols-outlined text-xl text-[#6b7a99] transition-colors hover:text-[#1a2e4a]">
+              info
+            </Link>
           </div>
         </div>
       </section>
     </footer>
-  );
+  )
 }
 
-export default Footer;
+export default Footer

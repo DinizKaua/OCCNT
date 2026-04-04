@@ -1,18 +1,56 @@
-# Ignorar arquivos de log
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
-# Node
+# Node / frontend
 node_modules/
+frontend/node_modules/
 dist/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
 
 # Python
 .python-version
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
 venv/
+.venv/
+env/
+ENV/
 
-# Env
+# Environment / secrets
 .env
+.env.*
+!.env.example
+*.local
 
-# OS
+# Runtime / generated data
+backend/runtime/
+backend/data/exports/*
+!backend/data/exports/.gitkeep
+backend/data/processed/*
+!backend/data/processed/.gitkeep
+backend/data/tmp/
+backend/data/uploads/
+reports/
+*.pdf
+
+# Editors / OS
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/

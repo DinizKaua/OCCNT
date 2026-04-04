@@ -15,12 +15,17 @@ async function request(path, options = {}) {
   const requestHeaders = new Headers(headers ?? {})
   const config = {
     ...rest,
+    credentials: "include",
     headers: requestHeaders,
   }
 
   if (body !== undefined) {
-    requestHeaders.set("Content-Type", "application/json")
-    config.body = JSON.stringify(body)
+    if (body instanceof FormData) {
+      config.body = body
+    } else {
+      requestHeaders.set("Content-Type", "application/json")
+      config.body = JSON.stringify(body)
+    }
   }
 
   const response = await fetch(url.toString(), config)
@@ -42,31 +47,55 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  getSession() {
+    return request("/api/session")
+  },
   getUiOptions() {
     return request("/api/ui/options")
+  },
+  getAvailability(system, uf, granularity) {
+    return request("/api/ui/availability", {
+      params: {
+        system,
+        uf,
+        granularity,
+      },
+    })
   },
   getRuntime() {
     return request("/api/runtime")
   },
-  getDatasets() {
-    return request("/api/datasets")
+  getDatasets(diseaseSlug) {
+    return request("/api/datasets", {
+      params: {
+        disease_slug: diseaseSlug,
+      },
+    })
   },
-  getDatasetPreview(fileId, limit = 10) {
+  getDatasetPreview(datasetId, limit = 10) {
     return request("/api/datasets/preview", {
       params: {
-        file_id: fileId,
+        dataset_id: datasetId,
         limit,
       },
     })
   },
-  getExportHistory() {
-    return request("/api/exports/history")
+  getExportHistory(diseaseSlug) {
+    return request("/api/exports/history", {
+      params: {
+        disease_slug: diseaseSlug,
+      },
+    })
   },
-  getResults() {
-    return request("/api/results")
+  getResults(diseaseSlug) {
+    return request("/api/results", {
+      params: {
+        disease_slug: diseaseSlug,
+      },
+    })
   },
-  getResultDetail(resultFile) {
-    return request(`/api/results/${encodeURIComponent(resultFile)}`)
+  getResultDetail(forecastId) {
+    return request(`/api/results/${encodeURIComponent(forecastId)}`)
   },
   exportFromDatasus(payload) {
     return request("/api/export", {

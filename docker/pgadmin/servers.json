@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "OCCNT Local PostgreSQL",
+      "Group": "OCCNT",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "occnt",
+      "Username": "postgres",
+      "SSLMode": "prefer"
+    }
+  }
+}

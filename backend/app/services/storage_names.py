@@ -6,7 +6,7 @@ import re
 
 
 def build_timestamp_tag() -> str:
-    return datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    return datetime.utcnow().strftime("%y%m%d%H%M%S")
 
 
 def slugify_identifier(value: str, default: str = "item") -> str:
@@ -26,30 +26,29 @@ def build_export_batch_name(
     month_end: int,
     icd_prefix: str,
 ) -> str:
-    icd_tag = icd_prefix.split(",")[0].strip().lower() if icd_prefix.strip() else "all"
-    granularity_label = "mensal" if granularity == "month" else "anual"
     if granularity == "month":
-        period_tag = f"{year_start}_{month_start:02d}_{year_end}_{month_end:02d}"
+        period_tag = f"{year_start}{month_start:02d}_{year_end}{month_end:02d}"
     else:
         period_tag = f"{year_start}_{year_end}"
     timestamp_tag = build_timestamp_tag()
-    return slugify_identifier(f"{system}_{uf}_{granularity_label}_{period_tag}_{icd_tag}_{timestamp_tag}", default="lote")
+    return slugify_identifier(f"{system}_{uf}_{period_tag}_{timestamp_tag}", default="lote")
 
 
 def build_export_dataset_file_name(batch_name: str, dataset_kind: str) -> str:
-    kind_label = slugify_identifier(dataset_kind, default="dados")
-    return f"{slugify_identifier(batch_name, 'lote')}_{kind_label}.csv"
+    normalized_kind = slugify_identifier(dataset_kind, default="dados")
+    suffix = "raw" if "brut" in normalized_kind else "base"
+    return f"{slugify_identifier(batch_name, 'lote')}_{suffix}.csv"
 
 
 def build_export_manifest_name(batch_name: str) -> str:
-    return f"{slugify_identifier(batch_name, 'lote')}_resumo.json"
+    return f"{slugify_identifier(batch_name, 'lote')}.json"
 
 
 def build_manual_upload_name(original_name: str) -> str:
     original_path = Path(original_name or "dataset.csv")
     stem = slugify_identifier(original_path.stem, default="dataset")
     timestamp_tag = build_timestamp_tag()
-    return f"manual_{stem}_{timestamp_tag}.csv"
+    return f"up_{stem}_{timestamp_tag}.csv"
 
 
 def build_processed_result_name(
@@ -69,7 +68,7 @@ def build_processed_result_name(
     timestamp_tag = build_timestamp_tag()
     frequency_label = _frequency_label(frequency)
     return (
-        f"previsao_{slugify_identifier(model, 'modelo')}_"
+        f"pred_{slugify_identifier(model, 'modelo')}_"
         f"{frequency_label}_"
         f"{slugify_identifier(state, 'estado')}_"
         f"{dataset_tag}_{timestamp_tag}.json"

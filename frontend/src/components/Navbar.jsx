@@ -1,34 +1,33 @@
-import { Link } from "react-router-dom"
+import { Link, NavLink } from "react-router-dom"
 
 function Navbar() {
+  const linkClassName = ({ isActive }) =>
+    isActive
+      ? "border-b-2 border-[#004587] pb-1 font-bold text-[#004587]"
+      : "text-slate-600 transition-colors hover:text-[#004587]"
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/70 backdrop-blur-md">
-      <nav className="flex items-center px-8 py-3">
-        <div className="flex-1">
+      <nav className="mx-auto flex max-w-6xl items-center gap-8 px-8 py-3">
+        <div className="min-w-0 flex-1">
           <Link to="/" className="text-2xl font-bold tracking-tighter text-[#001b3c]">
             Observatorio DCNT
           </Link>
         </div>
 
         <div className="hidden flex-1 justify-center gap-8 md:flex">
-          <Link to="/" className="border-b-2 border-[#004587] pb-1 font-bold text-[#004587]">
+          <NavLink to="/" end className={linkClassName}>
             Dados
-          </Link>
-          <a href="#" className="text-slate-600 transition-colors hover:text-[#004587]">
+          </NavLink>
+          <NavLink to="/sobre" className={linkClassName}>
             Sobre
-          </a>
-          <a href="#" className="text-slate-600 transition-colors hover:text-[#004587]">
+          </NavLink>
+          <NavLink to="/repositorio" className={linkClassName}>
             Repositorio
-          </a>
-          <a href="#" className="text-slate-600 transition-colors hover:text-[#004587]">
+          </NavLink>
+          <NavLink to="/contato" className={linkClassName}>
             Contato
-          </a>
-        </div>
-
-        <div className="flex flex-1 justify-end">
-          <button className="rounded-xl bg-gradient-to-r from-primary to-primary-container px-6 py-2 font-medium text-white transition-all hover:opacity-90 active:scale-95">
-            Entrar
-          </button>
+          </NavLink>
         </div>
       </nav>
     </header>

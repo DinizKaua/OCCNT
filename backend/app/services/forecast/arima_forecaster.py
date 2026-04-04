@@ -13,16 +13,17 @@ def forecast_arima_log(
     seasonal: bool,
     season_length: int,
 ) -> Tuple[np.ndarray, np.ndarray]:
+    series_length = int(len(series_log))
+    max_order = max(1, min(3, series_length // 2))
     model = auto_arima(
         series_log,
         seasonal=seasonal,
         m=season_length if seasonal else 1,
         D=0,
-        trend="t",
-        start_p=1,
-        start_q=1,
-        max_p=8,
-        max_q=8,
+        start_p=0,
+        start_q=0,
+        max_p=max_order,
+        max_q=max_order,
         stepwise=True,
         suppress_warnings=True,
         trace=False,

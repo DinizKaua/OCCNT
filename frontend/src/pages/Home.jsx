@@ -1,78 +1,61 @@
-import Navbar from "../components/Navbar"
+import { Link } from "react-router-dom"
+
 import Footer from "../components/Footer"
+import Navbar from "../components/Navbar"
 import Circulatorio from "../sections/Circulatorio"
-import Respiratorias from "../sections/Respiratorias"
 import Neoplasias from "../sections/Neoplasias"
+import Respiratorias from "../sections/Respiratorias"
 
 function Home() {
   return (
-    <div className="bg-background text-on-surface min-h-screen">
-
+    <div className="min-h-screen bg-background text-on-surface">
       <Navbar />
 
       <main className="pb-20">
-        
-        {/* HERO */}
-        <section className="relative min-h-[614px] flex items-center pt-16 pb-12 overflow-hidden bg-gradient-to-b from-surface to-surface-container-low">
-
-          {/* imagem (mantida como você pediu) */}
-          <div className="absolute right-0 top-0 w-1/2 h-full opacity-10 pointer-events-none">
+        <section className="relative flex min-h-[614px] items-center overflow-hidden bg-gradient-to-b from-surface to-surface-container-low pb-12 pt-16">
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-1/2 opacity-10">
             <img
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCU2Fe03B06N1qoOuJd8RtxW2WSsm1uoQrXSPVpGZRamA0FpPEo8uMNK37KvWolR01wA5rQ-fmsgdVoioA8DNfsgJ7e9Cl02t5l1IyK7HIaNxaqPMTkyjTbPJ8yMCa4Dl_M286OOr4-Uwf4vkjQFTHD4kko3WCtM0gMPE3xqJTx0D6ZZW5m8tpI9-uutVBFm30uTlQQ4_utwW9Y2TMyr8lyNM8TmPcU_u7SB0P6X25I_bLHAXxysVjSQPObCXrLn5xx6DlcsGJXeF0"
               alt=""
             />
           </div>
 
-          {/*CONTAINER PADRÃO */}
-          <div className="mx-auto px-20 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
-
+          <div className="relative z-10 mx-auto grid w-full grid-cols-1 items-center gap-12 px-20 lg:grid-cols-12">
             <div className="lg:col-span-7">
-
-              {/* badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 
-                bg-blue-100 text-blue-700 
-                rounded-full text-xs font-bold uppercase mb-6">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold uppercase text-blue-700">
                 <span className="material-symbols-outlined text-sm">analytics</span>
                 Dados Integrados DATASUS
               </div>
 
-              {/* título */}
-              <h1 className="text-4xl md:text-8xl font-extrabold tracking-tight leading-tight mb-6">
-                Monitoramento Estratégico de{" "}
-                <span className="text-primary-container">DCNT</span> no Brasil
+              <h1 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight md:text-8xl">
+                Monitoramento Estrategico de <span className="text-primary-container">DCNT</span> no Brasil
               </h1>
-              {/* descrição */}
-              <p className="text-on-surface-variant max-w-3xl text-lg mb-10 leading-relaxed">
-                Acesso transparente a indicadores epidemiológicos e tendências de Doenças Crônicas Não Transmissíveis, subsidiando políticas públicas e decisões em saúde fundamentadas em evidências do Ministério da Saúde.
+              <p className="mb-10 max-w-3xl text-lg leading-relaxed text-on-surface-variant">
+                Acesso transparente a indicadores epidemiologicos e tendencias de Doencas Cronicas Nao Transmissiveis,
+                apoiando decisoes em saude com dados do DATASUS e previsoes visualmente guiadas.
               </p>
 
-              {/* botões */}
               <div className="flex flex-wrap gap-4">
-                <button className="px-8 py-4 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary-container transition-all">
+                <Link to="/doencas/hipertensao" className="flex items-center gap-2 rounded-xl bg-primary px-8 py-4 font-bold text-white transition-all hover:bg-primary-container">
                   Explorar Indicadores
                   <span className="material-symbols-outlined">arrow_forward</span>
-                </button>
+                </Link>
 
-                <button className="px-8 py-4 border border-outline/30 glass-card rounded-xl font-bold hover:bg-surface-container transition-all">
-                  Relatórios Anuais
-                </button>
+                <Link to="/relatorios" className="glass-card rounded-xl border border-outline/30 px-8 py-4 font-bold transition-all hover:bg-surface-container">
+                  Relatorios Anuais
+                </Link>
               </div>
-
             </div>
-
           </div>
-
         </section>
 
         <Circulatorio />
         <Respiratorias />
         <Neoplasias />
-
       </main>
 
       <Footer />
-
     </div>
   )
 }

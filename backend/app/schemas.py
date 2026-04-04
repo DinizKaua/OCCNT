@@ -9,8 +9,16 @@ ForecastModel = Literal["arima", "theta"]
 DataGranularity = Literal["year", "month"]
 
 
+class SessionInfo(BaseModel):
+    session_id: str
+    created_at: str
+    updated_at: str
+    last_disease_slug: Optional[str] = None
+
+
 class ForecastRequest(BaseModel):
-    dataset_file: str = Field(..., description="Relative path under backend/data")
+    dataset_id: str = Field(..., description="Dataset UUID stored in PostgreSQL")
+    disease_slug: str = Field(..., description="Current disease page slug")
     state: str = Field(default="21", description="UF code, sigla or name")
     mode: ForecastMode = "auto"
     model: ForecastModel = "arima"
@@ -35,6 +43,10 @@ class ForecastRequest(BaseModel):
 
 
 class ForecastResponse(BaseModel):
+    forecast_id: str
+    dataset_id: str
+    saved_at: str
+    disease_slug: str
     source_frequency: str
     output_frequency: str
     state_label: str
@@ -50,17 +62,27 @@ class ForecastResponse(BaseModel):
 
 
 class DatasetInfo(BaseModel):
-    file_id: str
+    dataset_id: str
     file_name: str
     display_name: Optional[str] = None
     source_group: str
+    system: Optional[str] = None
+    uf: Optional[str] = None
+    year_start: Optional[int] = None
+    year_end: Optional[int] = None
+    month_start: Optional[int] = None
+    month_end: Optional[int] = None
+    granularity: Optional[str] = None
     layout: str
     frequency: str
     size_kb: float
     updated_at: str
+    disease_slug: str
 
 
 class DatasusExportRequest(BaseModel):
+    disease_slug: str
+    disease_title: str
     system: str = "SIM-DO"
     uf: str = "MA"
     year_start: int = 2018
@@ -96,11 +118,13 @@ class DatasusExportRequest(BaseModel):
 
 
 class DatasusExportResponse(BaseModel):
+    dataset_id: str
+    disease_slug: str
     dataset_name: str
-    output_dir: str
-    tabnet_file: str
-    tidy_file: str
-    preferred_dataset_file: str
+    display_name: str
+    tabnet_file_name: str
+    tidy_file_name: str
+    preferred_file_name: str
     command: List[str]
     resolved_rscript: Optional[str] = None
     stdout: str

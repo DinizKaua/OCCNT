@@ -1,11 +1,9 @@
 function ForecastChart({ prediction }) {
   if (!prediction || !prediction.historical_data?.length) {
     return (
-      <div className="rounded-[28px] border border-white/10 bg-slate-950 p-6 text-slate-300">
-        <p className="text-lg font-semibold text-white">Sem previsao carregada</p>
-        <p className="mt-2 text-sm text-slate-400">
-          Gere uma previsao automatica pelo bloco DATASUS ou ajuste os parametros no painel personalizado.
-        </p>
+      <div className="rounded-[24px] border border-slate-200 bg-slate-950 p-5 text-slate-300">
+        <p className="text-base font-semibold text-white">Sem previsao</p>
+        <p className="mt-2 text-sm text-slate-400">Gere uma previsao para visualizar o grafico.</p>
       </div>
     )
   }
@@ -79,41 +77,24 @@ function ForecastChart({ prediction }) {
     }
   })
 
-  const previewLabels = [labels[0], labels[Math.floor(labels.length / 2)], labels[labels.length - 1]].filter(Boolean)
+  const historyRange = buildRangeLabel(historical, timeKey)
+  const forecastRange = buildRangeLabel(forecast, timeKey)
+  const historyColor = "#7dd3fc"
+  const forecastColor = "#6ee7b7"
 
   return (
-    <div className="rounded-[28px] border border-white/10 bg-slate-950 p-6 text-white shadow-2xl">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">Serie temporal</p>
-          <h3 className="mt-2 text-2xl font-bold">Historico e previsao conectados</h3>
-        </div>
-        <div className="flex flex-wrap gap-3 text-xs text-slate-300">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-cyan-300"></span>
-            Historico
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-300"></span>
-            Previsao
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-white/40"></span>
-            Intervalo
-          </span>
-        </div>
+    <div className="rounded-[24px] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-slate-200">Historico e previsao</p>
+        <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">{prediction.model}</span>
       </div>
 
       <div className="mt-6 overflow-x-auto">
         <svg viewBox={`0 0 ${width} ${height}`} className="min-w-[720px] w-full">
           <defs>
             <linearGradient id="forecastFill" x1="0%" x2="0%" y1="0%" y2="100%">
-              <stop offset="0%" stopColor="rgba(103, 232, 249, 0.32)" />
-              <stop offset="100%" stopColor="rgba(103, 232, 249, 0.02)" />
-            </linearGradient>
-            <linearGradient id="forecastLine" x1="0%" x2="100%" y1="0%" y2="0%">
-              <stop offset="0%" stopColor="#7dd3fc" />
-              <stop offset="100%" stopColor="#6ee7b7" />
+              <stop offset="0%" stopColor="rgba(110, 231, 183, 0.32)" />
+              <stop offset="100%" stopColor="rgba(110, 231, 183, 0.02)" />
             </linearGradient>
           </defs>
 
@@ -137,7 +118,7 @@ function ForecastChart({ prediction }) {
 
           <polyline
             fill="none"
-            stroke="#7dd3fc"
+            stroke={historyColor}
             strokeWidth="4"
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -147,7 +128,7 @@ function ForecastChart({ prediction }) {
           {forecast.length > 0 ? (
             <polyline
               fill="none"
-              stroke="url(#forecastLine)"
+              stroke={forecastColor}
               strokeWidth="4"
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -161,7 +142,7 @@ function ForecastChart({ prediction }) {
               cx={xForIndex(index, labels.length)}
               cy={yForValue(Number(item.value))}
               r="4.5"
-              fill="#7dd3fc"
+              fill={historyColor}
             />
           ))}
 
@@ -171,26 +152,37 @@ function ForecastChart({ prediction }) {
               cx={xForIndex(historical.length + index, labels.length)}
               cy={yForValue(Number(item.value))}
               r="4.5"
-              fill="#6ee7b7"
+              fill={forecastColor}
             />
           ))}
         </svg>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400">
-        <div className="flex flex-wrap gap-3">
-          {previewLabels.map((label) => (
-            <span key={label} className="rounded-full border border-white/10 px-3 py-1">
-              {label}
-            </span>
-          ))}
-        </div>
-        <p>
-          Modelo ativo: <span className="font-semibold text-white">{prediction.model}</span>
-        </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <RangeCard label="Dados" range={historyRange} accentClass="border-sky-400/30 bg-sky-400/10 text-sky-200" />
+        <RangeCard label="Previsao" range={forecastRange} accentClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-200" />
       </div>
     </div>
   )
+}
+
+function RangeCard({ label, range, accentClass }) {
+  return (
+    <div className={`rounded-2xl border px-4 py-3 ${accentClass}`}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.24em]">{label}</p>
+      <p className="mt-2 text-sm font-semibold">{range}</p>
+    </div>
+  )
+}
+
+function buildRangeLabel(items, timeKey) {
+  if (!items?.length) {
+    return "--"
+  }
+
+  const first = String(items[0][timeKey])
+  const last = String(items[items.length - 1][timeKey])
+  return first === last ? first : `${first} - ${last}`
 }
 
 function formatCompactNumber(value) {

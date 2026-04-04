@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
-import json
 import os
 from pathlib import Path
 import re
@@ -9,37 +7,43 @@ import shutil
 import subprocess
 from typing import Any, Dict, List
 
-from ..config import EXPORTS_DIR, R_EXPORT_SCRIPT
+from ..config import R_EXPORT_SCRIPT, TEMP_EXPORTS_DIR
 from ..schemas import DatasusExportRequest
-from .dataset_catalog import dataset_id_from_path
-from .storage_names import (
-    build_export_batch_name,
-    build_export_dataset_file_name,
-    build_export_manifest_name,
-)
+from .datasus_availability import validate_export_periods
+from .storage_names import build_export_batch_name, build_export_dataset_file_name
 
 
 def run_datasus_export(request: DatasusExportRequest) -> Dict[str, Any]:
     if not R_EXPORT_SCRIPT.exists():
         raise FileNotFoundError(f"R export script not found: {R_EXPORT_SCRIPT}")
 
+    validate_export_periods(
+        system=request.system,
+        uf=request.uf,
+        granularity=request.granularity,
+        year_start=request.year_start,
+        year_end=request.year_end,
+        month_start=request.month_start,
+        month_end=request.month_end,
+    )
+
     dataset_name = _build_dataset_name(request)
-    output_dir = _unique_output_dir(EXPORTS_DIR / dataset_name)
+    output_dir = _unique_output_dir(TEMP_EXPORTS_DIR / dataset_name)
     output_dir.mkdir(parents=True, exist_ok=False)
     batch_name = output_dir.name
 
     tabnet_path = output_dir / build_export_dataset_file_name(batch_name, "dados_brutos")
     tidy_path = output_dir / build_export_dataset_file_name(batch_name, "dados_modelagem")
-    manifest_path = output_dir / build_export_manifest_name(batch_name)
 
     try:
         rscript_command = resolve_rscript_command(request.rscript_bin)
+        system_value = "SIM-DO" if request.system == "SIM-DO-PRELIM" else request.system
         command = [
             rscript_command,
             "--vanilla",
             str(R_EXPORT_SCRIPT),
             "--system",
-            request.system,
+            system_value,
             "--uf",
             request.uf,
             "--year-start",
@@ -90,31 +94,18 @@ def run_datasus_export(request: DatasusExportRequest) -> Dict[str, Any]:
     if not tidy_path.exists():
         tidy_path = tabnet_path
 
-    manifest = {
-        "dataset_name": output_dir.name,
-        "created_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        "request": request.model_dump(),
-        "resolved_rscript": rscript_command,
-        "command": command,
-        "tabnet_file": dataset_id_from_path(tabnet_path),
-        "tidy_file": dataset_id_from_path(tidy_path),
-        "stdout": result.stdout[-12000:],
-        "stderr": result.stderr[-12000:],
-    }
-    with manifest_path.open("w", encoding="utf-8") as handle:
-        json.dump(manifest, handle, ensure_ascii=False, indent=2)
-
-    preferred_dataset = dataset_id_from_path(tidy_path if tidy_path.exists() else tabnet_path)
     return {
         "dataset_name": output_dir.name,
         "output_dir": str(output_dir),
-        "tabnet_file": dataset_id_from_path(tabnet_path),
-        "tidy_file": dataset_id_from_path(tidy_path),
-        "preferred_dataset_file": preferred_dataset,
+        "tabnet_file": tabnet_path.name,
+        "tidy_file": tidy_path.name,
+        "preferred_dataset_file": tidy_path.name if tidy_path.exists() else tabnet_path.name,
         "command": command,
         "resolved_rscript": rscript_command,
         "stdout": result.stdout,
         "stderr": result.stderr,
+        "tabnet_path": str(tabnet_path),
+        "tidy_path": str(tidy_path),
     }
 
 
@@ -123,62 +114,11 @@ def resolve_rscript_command(requested_value: str = "Rscript") -> str:
 
 
 def list_export_jobs(limit: int = 200) -> List[Dict[str, Any]]:
-    jobs: List[Dict[str, Any]] = []
-    if not EXPORTS_DIR.exists():
-        return jobs
+    return []
 
-    for folder in EXPORTS_DIR.iterdir():
-        if not folder.is_dir():
-            continue
-        manifest_candidates = list(folder.glob("*_resumo.json"))
-        manifest_path = manifest_candidates[0] if manifest_candidates else folder / "resumo_lote.json"
-        if not manifest_path.exists():
-            manifest_path = folder / "manifest.json"
-        if manifest_path.exists():
-            try:
-                with manifest_path.open("r", encoding="utf-8") as handle:
-                    manifest = json.load(handle)
-            except Exception:
-                manifest = {}
-        else:
-            manifest = {}
 
-        request_data = manifest.get("request", {})
-        created_at = manifest.get("created_at")
-        if not created_at:
-            created_at = datetime.fromtimestamp(folder.stat().st_mtime).isoformat(timespec="seconds") + "Z"
-
-        tabnet_file = manifest.get("tabnet_file")
-        tidy_file = manifest.get("tidy_file")
-        if not tabnet_file:
-            for candidate in list(folder.glob("*_dados_brutos.csv")) + [folder / "dados_brutos.csv", folder / "tabnet_annual.csv", folder / "tabnet_monthly.csv"]:
-                if candidate.exists():
-                    tabnet_file = dataset_id_from_path(candidate)
-                    break
-        if not tidy_file:
-            for candidate in list(folder.glob("*_dados_modelagem.csv")) + [folder / "dados_modelagem.csv", folder / "dataset_tidy.csv"]:
-                if candidate.exists():
-                    tidy_file = dataset_id_from_path(candidate)
-                    break
-
-        jobs.append(
-            {
-                "dataset_name": folder.name,
-                "created_at": created_at,
-                "system": request_data.get("system", ""),
-                "uf": request_data.get("uf", ""),
-                "granularity": request_data.get("granularity", ""),
-                "year_start": request_data.get("year_start", ""),
-                "year_end": request_data.get("year_end", ""),
-                "icd_prefix": request_data.get("icd_prefix", ""),
-                "tabnet_file": tabnet_file or "",
-                "tidy_file": tidy_file or "",
-                "preferred_dataset_file": tidy_file or tabnet_file or "",
-            }
-        )
-
-    jobs.sort(key=lambda item: item.get("created_at", ""), reverse=True)
-    return jobs[:limit]
+def cleanup_export_output(output_dir: str) -> None:
+    _cleanup_output_dir(Path(output_dir))
 
 
 def _build_dataset_name(request: DatasusExportRequest) -> str:
