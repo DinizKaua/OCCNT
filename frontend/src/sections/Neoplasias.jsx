@@ -1,6 +1,7 @@
 import Card from "../components/Card"
 import { neoplasiaDiseaseCards } from "../data/diseases"
 
+// Neoplasias section showing disease cards without icons/buttons for compact display.
 function Neoplasias() {
   return (
     <section>

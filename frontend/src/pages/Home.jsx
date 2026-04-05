@@ -1,24 +1,34 @@
 import { Link } from "react-router-dom"
 
+import brazil from "../assets/brazil.svg"
+
+
 import Footer from "../components/Footer"
 import Navbar from "../components/Navbar"
 import Circulatorio from "../sections/Circulatorio"
 import Neoplasias from "../sections/Neoplasias"
 import Respiratorias from "../sections/Respiratorias"
+import Metabolicas from "../sections/Metabolicas"
 
 function Home() {
   return (
     <div className="min-h-screen bg-background text-on-surface">
       <Navbar />
 
+      {/* Página inicial com banner, chamadas para ação e seções de doenças */}
       <main className="pb-20">
         <section className="relative flex min-h-[614px] items-center overflow-hidden bg-gradient-to-b from-surface to-surface-container-low pb-12 pt-16">
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-1/2 opacity-10">
+
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-1/2">
+
             <img
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover opacity-10"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCU2Fe03B06N1qoOuJd8RtxW2WSsm1uoQrXSPVpGZRamA0FpPEo8uMNK37KvWolR01wA5rQ-fmsgdVoioA8DNfsgJ7e9Cl02t5l1IyK7HIaNxaqPMTkyjTbPJ8yMCa4Dl_M286OOr4-Uwf4vkjQFTHD4kko3WCtM0gMPE3xqJTx0D6ZZW5m8tpI9-uutVBFm30uTlQQ4_utwW9Y2TMyr8lyNM8TmPcU_u7SB0P6X25I_bLHAXxysVjSQPObCXrLn5xx6DlcsGJXeF0"
               alt=""
             />
+
+            <img src={brazil} alt="Brasil" className="absolute inset-0 m-auto w-[600px] text-[#003B6F] opacity-20 blur-[1px]"/>
+
           </div>
 
           <div className="relative z-10 mx-auto grid w-full grid-cols-1 items-center gap-12 px-20 lg:grid-cols-12">
@@ -50,9 +60,11 @@ function Home() {
           </div>
         </section>
 
+        {/* Seções de doenças */}
         <Circulatorio />
         <Respiratorias />
         <Neoplasias />
+        <Metabolicas />
       </main>
 
       <Footer />

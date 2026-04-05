@@ -348,11 +348,72 @@ export const allDiseases = [
       icd_prefix: "C18,C19,C20,C21",
     },
   }),
+  createDisease({
+    section: "metabolicas",
+    sectionTitle: "Metabolicas",
+    slug: "diabetes",
+    icon: "bloodtype",
+    title: "Diabetes Mellitus",
+    trend: "+3.4%",
+    trendType: "up",
+    cidLabel: "C18-C21",
+    description: "Monitoramento de prevalência, internações e mortalidade associada à diabetes.",
+    systemArea: "Linha metabolica",
+    summary: "Acompanhe diabetes com uma pagina dedicada a importacao da base, previsao e visualizacao compartilhavel.",
+    context: "A linha metabolica demanda leitura longitudinal e comparacao entre previsoes para apoiar planejamento e monitoramento.",
+    insight: "O fluxo novo organiza a operacao por etapas e mantem o frontend visual padronizado com o restante do site.",
+    focusCards: [
+      { icon: "splitscreen", title: "Blocos unitarios", text: "Cada etapa fica isolada, evitando excesso de informacao na tela." },
+      { icon: "database_search", title: "Consulta direta", text: "Bases e previsoes ja processadas podem ser reutilizadas sem nova importacao." },
+      { icon: "description", title: "Saida compartilhavel", text: "O ultimo bloco concentra o material pronto para exportacao." },
+    ],
+    exportDefaults: {
+      system: "SIM-DO",
+      uf: "MA",
+      year_start: 2018,
+      year_end: 2022,
+      granularity: "year",
+      month_start: 1,
+      month_end: 12,
+      icd_prefix: "C18,C19,C20,C21",
+    },
+  }),
+  createDisease({
+    section: "metabolicas",
+    sectionTitle: "Metabolicas",
+    slug: "obesidade",
+    icon: "fitness_center",
+    title: "Obesidade",
+    trend: "+3.4%",
+    trendType: "up",
+    cidLabel: "C18-C21",
+    description: "Monitoramento de prevalência, internações e mortalidade associada à diabetes.",
+    systemArea: "Linha metabolica",
+    summary: "Acompanhe diabetes com uma pagina dedicada a importacao da base, previsao e visualizacao compartilhavel.",
+    context: "A linha metabolica demanda leitura longitudinal e comparacao entre previsoes para apoiar planejamento e monitoramento.",
+    insight: "O fluxo novo organiza a operacao por etapas e mantem o frontend visual padronizado com o restante do site.",
+    focusCards: [
+      { icon: "splitscreen", title: "Blocos unitarios", text: "Cada etapa fica isolada, evitando excesso de informacao na tela." },
+      { icon: "database_search", title: "Consulta direta", text: "Bases e previsoes ja processadas podem ser reutilizadas sem nova importacao." },
+      { icon: "description", title: "Saida compartilhavel", text: "O ultimo bloco concentra o material pronto para exportacao." },
+    ],
+    exportDefaults: {
+      system: "SIM-DO",
+      uf: "MA",
+      year_start: 2018,
+      year_end: 2022,
+      granularity: "year",
+      month_start: 1,
+      month_end: 12,
+      icd_prefix: "C18,C19,C20,C21",
+    },
+  }),
 ]
 
 export const diseaseCards = allDiseases.filter((item) => item.section === "circulatorio")
 export const respiratoryDiseaseCards = allDiseases.filter((item) => item.section === "respiratorio")
 export const neoplasiaDiseaseCards = allDiseases.filter((item) => item.section === "neoplasias")
+export const metabolicasDiseaseCards = allDiseases.filter((item) => item.section === "metabolicas")
 
 export function getDiseaseBySlug(slug) {
   return allDiseases.find((item) => item.slug === slug) ?? null

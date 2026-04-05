@@ -31,7 +31,7 @@ function PlaceholderPage({ eyebrow, title, description }) {
             <InfoCard
               icon="motion_photos_auto"
               title="Fluxo de placeholder"
-              text="Este espaco existe para manter todos os botoes e links do site navegaveis durante o desenvolvimento."
+              text="Este espaço existe para manter todos os botoes e links do site navegaveis durante o desenvolvimento."
             />
             <InfoCard
               icon="public"

@@ -12,6 +12,7 @@ const institutionalLinks = [
   { label: "Contato", to: "/contato" },
 ]
 
+// Site footer showing data source metrics, quick resource links and institutional navigation.
 function Footer() {
   return (
     <footer>
@@ -26,11 +27,11 @@ function Footer() {
           </div>
           <div className="flex gap-12 text-center">
             <div>
-              <p className="text-4xl font-black">210M+</p>
+              <p className="text-4xl font-black">0+</p>
               <p className="mt-1 text-xs opacity-60">Registros analisados</p>
             </div>
             <div>
-              <p className="text-4xl font-black">5.5k+</p>
+              <p className="text-4xl font-black">0+</p>
               <p className="mt-1 text-xs opacity-60">Municipios cobertos</p>
             </div>
           </div>

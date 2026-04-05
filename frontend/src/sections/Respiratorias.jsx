@@ -1,6 +1,7 @@
 import Card from "../components/Card"
 import { respiratoryDiseaseCards } from "../data/diseases"
 
+// Respiratory disease section with horizontal cards for quick overview.
 function Respiratorias() {
   return (
     <section className="py-8">

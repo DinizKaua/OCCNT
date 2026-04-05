@@ -1,6 +1,7 @@
 import Card from "../components/Card"
 import { diseaseCards } from "../data/diseases"
 
+// Circulatory disease section displaying a grid of disease cards.
 function Circulatorio() {
   return (
     <section className="py-20" id="circulatorio">

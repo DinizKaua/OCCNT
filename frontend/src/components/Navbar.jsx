@@ -1,5 +1,7 @@
 import { Link, NavLink } from "react-router-dom"
+import logo from "../assets/logo.png"
 
+// Sticky top navigation with active link highlighting.
 function Navbar() {
   const linkClassName = ({ isActive }) =>
     isActive
@@ -8,11 +10,15 @@ function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/70 backdrop-blur-md">
-      <nav className="mx-auto flex max-w-6xl items-center gap-8 px-8 py-3">
+      <nav className="mx-auto flex max-w-6xl items-center gap-8 px-8 py-6">
         <div className="min-w-0 flex-1">
-          <Link to="/" className="text-2xl font-bold tracking-tighter text-[#001b3c]">
-            Observatorio DCNT
-          </Link>
+          <Link to="/" className="flex items-center">
+          <img 
+            src={logo} 
+            alt="Observatório DCNT" 
+            className="h-16 w-auto object-contain -my-3"
+          />
+        </Link>
         </div>
 
         <div className="hidden flex-1 justify-center gap-8 md:flex">
